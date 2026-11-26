@@ -18,6 +18,9 @@ vi.mock("../../../hooks/useEmployees", () => ({
 const periodLabel = () =>
   screen.getAllByText(/Periodo de Consulta/i).pop()?.parentElement?.textContent;
 
+const customDateInput = (which: "start" | "end") =>
+  screen.getByLabelText(which === "start" ? /inicio/i : /término/i);
+
 describe("navegación de presets de periodo", () => {
   it("KpiFilterPanel navega entre trimestres y no pasa del periodo en curso", async () => {
     const user = userEvent.setup();
@@ -67,5 +70,37 @@ describe("navegación de presets de periodo", () => {
     await user.click(screen.getByRole("button", { name: "Anual" }));
     await user.click(screen.getByTitle("Anterior"));
     expect(periodLabel()).toContain("Año 2025");
+  });
+
+  it("KpiFilterPanel desplaza el rango personalizado manteniendo su duración", async () => {
+    const user = userEvent.setup();
+    render(<KpiFilterPanel onFiltersChange={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Personalizado" }));
+
+    // Estado inicial: rango de un dia anclado al dia en curso (2026-11-25).
+    expect(customDateInput("start")).toHaveValue("2026-11-25");
+    expect(customDateInput("end")).toHaveValue("2026-11-25");
+    expect(screen.getByTitle("Siguiente")).toBeDisabled(); // Rango pasado de 3 dias: la navegacion queda habilitada en ambos sentidos.
+    await user.clear(customDateInput("start"));
+    await user.type(customDateInput("start"), "2026-11-20");
+    await user.clear(customDateInput("end"));
+    await user.type(customDateInput("end"), "2026-11-22");
+    expect(customDateInput("start")).toHaveValue("2026-11-20");
+    expect(screen.getByTitle("Siguiente")).toBeEnabled();
+
+    await user.click(screen.getByTitle("Anterior"));
+    expect(customDateInput("start")).toHaveValue("2026-11-17");
+    expect(customDateInput("end")).toHaveValue("2026-11-19");
+
+    await user.click(screen.getByTitle("Siguiente"));
+    expect(customDateInput("start")).toHaveValue("2026-11-20");
+    expect(customDateInput("end")).toHaveValue("2026-11-22");
+
+    // El avance nunca proyecta el termino mas alla del dia en curso.
+    await user.click(screen.getByTitle("Siguiente"));
+    expect(customDateInput("start")).toHaveValue("2026-11-23");
+    expect(customDateInput("end")).toHaveValue("2026-11-25");
+    expect(screen.getByTitle("Siguiente")).toBeDisabled();
   });
 });
