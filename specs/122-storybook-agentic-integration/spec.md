@@ -63,7 +63,7 @@ Fuera (explícito):
       `http://127.0.0.1:6006/mcp` responde con el inventario de herramientas;
       `.vscode/mcp.json` registra el servidor para VS Code Copilot.
 - [x] AC2: `@storybook/addon-vitest@10.6.9` está registrado; `npm run
-    test:storybook` ejecuta un smoke test de render por historia certificada
+test:storybook` ejecuta un smoke test de render por historia certificada
       en browser mode y termina en verde (228/228), con las violaciones a11y preexistentes
       corregidas o exceptuadas con ratchet documentado (nunca silenciadas sin
       registro).
@@ -80,7 +80,7 @@ Fuera (explícito):
       quedan verdes; `AGENTS.md` se mantiene ≤ 120 líneas.
 - [x] AC5: El preflight pre-PR ejecuta `npm run test:storybook` en modo `--pr`
       cuando hay cambios de UI/historias en `frontend/src`; `node
-    .agents/skills/ci-preflight/scripts/preflight.cjs --pr` termina verde.
+.agents/skills/ci-preflight/scripts/preflight.cjs --pr` termina verde.
 - [x] AC6: El bundle de producción sigue sin runtime de Storybook:
       `npm run build && npm run check:storybook-runtime` verde.
 - [x] AC7: ADR-0033 promovido a Aceptado e indexado en `docs/adr/README.md`;
