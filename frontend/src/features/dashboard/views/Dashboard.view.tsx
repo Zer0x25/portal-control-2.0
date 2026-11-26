@@ -12,11 +12,17 @@ import {
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import EmptyState from "../../../components/ui/EmptyState";
 import CinematicModal from "../../../components/ui/CinematicModal";
+import PresentEmployeesModal from "../components/PresentEmployeesModal";
 import WelcomePanel from "../components/WelcomePanel";
 import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-import { DailyTimeRecord, DashboardWidget, ShiftReport } from "../../../types/index";
+import {
+  DailyTimeRecord,
+  DashboardWidget,
+  EmployeeWithClockingStatus,
+  ShiftReport,
+} from "../../../types/index";
 
 interface DashboardModalsState {
   showReportDetailsModal: ShiftReport | null;
@@ -49,11 +55,13 @@ interface DashboardViewProps {
   isLoadingOverview: boolean;
   teamStatus: unknown;
   unscheduledPresent: unknown[];
+  employeeStatuses: EmployeeWithClockingStatus[];
+  isResolvingPresentRecord: boolean;
   visibleWidgets: DashboardWidget[];
   widgetProps: Record<string, Record<string, unknown>>;
   quickActionModal: React.ReactNode;
   editTimestampModal: React.ReactNode;
-  handlePresentEmployeeDoubleClick: (r: DailyTimeRecord) => void;
+  handlePresentEmployeeDoubleClick: (employeeId: string, employeeName: string) => void;
   handleAnomalyRecordDoubleClick: (r: DailyTimeRecord) => void;
 }
 
@@ -65,10 +73,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   shiftReports,
   isLoadingReports,
   isLoadingOverview,
+  employeeStatuses,
+  isResolvingPresentRecord,
   visibleWidgets,
   widgetProps,
   quickActionModal,
   editTimestampModal,
+  handlePresentEmployeeDoubleClick,
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
@@ -155,14 +166,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <div>Anomalías del equipo se mostrarán aquí</div>
       </CinematicModal>
 
-      <CinematicModal
+      <PresentEmployeesModal
         isOpen={modals.isPresentModalOpen}
         onClose={actions.closePresentModal}
-        title="Personal Presente"
-        maxWidth="max-w-6xl"
-      >
-        <div>Personal presente se mostrará aquí</div>
-      </CinematicModal>
+        employeeStatuses={employeeStatuses}
+        isResolvingRecord={isResolvingPresentRecord}
+        onEmployeeDoubleClick={handlePresentEmployeeDoubleClick}
+      />
 
       <AmbientReminderManager />
     </Container>

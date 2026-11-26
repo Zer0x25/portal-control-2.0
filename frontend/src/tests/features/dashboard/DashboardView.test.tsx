@@ -54,6 +54,8 @@ const makeProps = (overrides: Partial<React.ComponentProps<typeof DashboardView>
   isLoadingOverview: false,
   teamStatus: { present: 0, total: 0, anomaliesCount: 0 },
   unscheduledPresent: [],
+  employeeStatuses: [],
+  isResolvingPresentRecord: false,
   visibleWidgets: [widget],
   widgetProps: {},
   quickActionModal: null,
