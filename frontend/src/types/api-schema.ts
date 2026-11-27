@@ -4002,7 +4002,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Genera secreto MFA y QR (Solo Administrador) */
+    /** Genera secreto MFA y QR (Solo Super_Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -4025,7 +4025,7 @@ export interface paths {
             };
           };
         };
-        /** @description Requiere rol Administrador */
+        /** @description Requiere rol Super_Administrador */
         403: {
           headers: {
             [name: string]: unknown;
@@ -4056,7 +4056,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Habilita MFA tras verificar primer código (Solo Administrador) */
+    /** Habilita MFA tras verificar primer código (Solo Super_Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -4088,7 +4088,7 @@ export interface paths {
           };
           content?: never;
         };
-        /** @description Requiere rol Administrador */
+        /** @description Requiere rol Super_Administrador */
         403: {
           headers: {
             [name: string]: unknown;
@@ -5261,8 +5261,8 @@ export interface components {
         | "Usuario"
         | "Reloj_Control"
         | "Supervisor"
+        | "Super_Administrador"
         | "Administrador"
-        | "Supervisor_Elevado"
         | "Fiscalizador";
       employeeId?: string;
     };
@@ -5299,8 +5299,8 @@ export interface components {
         | "Usuario"
         | "Reloj_Control"
         | "Supervisor"
+        | "Super_Administrador"
         | "Administrador"
-        | "Supervisor_Elevado"
         | "Fiscalizador"
         | "Archivado";
       employeeId?: string | null;
@@ -5321,8 +5321,8 @@ export interface components {
         | "Usuario"
         | "Reloj_Control"
         | "Supervisor"
+        | "Super_Administrador"
         | "Administrador"
-        | "Supervisor_Elevado"
         | "Fiscalizador"
         | "Archivado";
       employeeId?: string | null;

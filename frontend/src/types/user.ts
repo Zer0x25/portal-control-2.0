@@ -4,8 +4,8 @@ export type UserRole =
   | "Usuario"
   | "Reloj_Control"
   | "Supervisor"
+  | "Super_Administrador"
   | "Administrador"
-  | "Supervisor_Elevado"
   | "Fiscalizador"
   | "Archivado";
 

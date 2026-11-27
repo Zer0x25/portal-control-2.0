@@ -142,7 +142,7 @@ async function createTempEmployee(request: APIRequestContext, tag: string): Prom
 
 async function createTempUser(
   request: APIRequestContext,
-  role: "Usuario" | "Reloj_Control" | "Supervisor_Elevado" | "Administrador",
+  role: "Usuario" | "Reloj_Control" | "Administrador" | "Super_Administrador",
   options?: { employeeId?: string; clearForceChange?: boolean },
 ): Promise<TempUser> {
   const tag = buildTag();
@@ -250,7 +250,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
     request,
   }) => {
     const roles: Array<{
-      role: "Reloj_Control" | "Supervisor_Elevado" | "Usuario";
+      role: "Reloj_Control" | "Administrador" | "Usuario";
       expectedPath: RegExp;
       needsEmployee: boolean;
     }> = [
@@ -260,7 +260,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
         needsEmployee: false,
       },
       {
-        role: "Supervisor_Elevado",
+        role: "Administrador",
         expectedPath: /#\/(dashboard|dashboard-supervisor)/,
         needsEmployee: false,
       },
@@ -465,14 +465,14 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
     }
   });
 
-  test("MFA en UI con Administrador temporal: visibilidad de mfa-setup-button, enrolamiento, backdrop no cierra y toast de bienvenida", async ({
+  test("MFA en UI con Super_Administrador temporal: visibilidad de mfa-setup-button, enrolamiento, backdrop no cierra y toast de bienvenida", async ({
     page,
     request,
   }) => {
-    const nonAdmin = await createTempUser(request, "Supervisor_Elevado", {
+    const nonAdmin = await createTempUser(request, "Administrador", {
       clearForceChange: true,
     });
-    const tempAdmin = await createTempUser(request, "Administrador", {
+    const tempAdmin = await createTempUser(request, "Super_Administrador", {
       clearForceChange: true,
     });
     const capturedTokens: string[] = [];
@@ -489,7 +489,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
       await page.locator('[data-testid="dropdown-logout-button"]').click();
       await expect(page.locator("#username")).toBeVisible({ timeout: 15000 });
 
-      // 2. Administrador temporal sin MFA ve mfa-setup-button y completa enrolamiento
+      // 2. Super_Administrador temporal sin MFA ve mfa-setup-button y completa enrolamiento
       await uiLogin(page, tempAdmin.username, tempAdmin.initialSecret);
       await expect(page).toHaveURL(/#\/(dashboard|dashboard-supervisor)/, { timeout: 30000 });
       await expect(page.locator('[data-testid="app-shell"]')).toBeVisible({ timeout: 15000 });
@@ -591,7 +591,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
         JSON.stringify({
           id: "qa-orphan-user",
           username: "qa_e2e_auth_orphan",
-          role: "Administrador",
+          role: "Super_Administrador",
           employeeId: null,
           isDeleted: false,
           lastModified: Date.now(),
@@ -614,13 +614,13 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
     browser,
     request,
   }) => {
-    const userLogout = await createTempUser(request, "Supervisor_Elevado", {
+    const userLogout = await createTempUser(request, "Administrador", {
       clearForceChange: true,
     });
-    const user401 = await createTempUser(request, "Supervisor_Elevado", {
+    const user401 = await createTempUser(request, "Administrador", {
       clearForceChange: true,
     });
-    const userForce = await createTempUser(request, "Supervisor_Elevado", {
+    const userForce = await createTempUser(request, "Administrador", {
       clearForceChange: true,
     });
     const adminToken = await getAdminToken(request);
@@ -861,7 +861,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
   }) => {
     const tag = buildTag();
     const emp = await createTempEmployee(request, tag);
-    const tempUser = await createTempUser(request, "Supervisor_Elevado", {
+    const tempUser = await createTempUser(request, "Administrador", {
       clearForceChange: true,
     });
     const capturedTokens: string[] = [];

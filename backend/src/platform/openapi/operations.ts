@@ -2775,7 +2775,7 @@
  * @openapi
  * /api/auth/mfa/setup:
  *   post:
- *     summary: Genera secreto MFA y QR (Solo Administrador)
+ *     summary: Genera secreto MFA y QR (Solo Super_Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2792,7 +2792,7 @@
  *                 secret: { type: string }
  *                 message: { type: string }
  *       403:
- *         description: Requiere rol Administrador
+ *         description: Requiere rol Super_Administrador
  *       409:
  *         description: MFA ya habilitado
  */
@@ -2801,7 +2801,7 @@
  * @openapi
  * /api/auth/mfa/verify:
  *   post:
- *     summary: Habilita MFA tras verificar primer código (Solo Administrador)
+ *     summary: Habilita MFA tras verificar primer código (Solo Super_Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2824,7 +2824,7 @@
  *       400:
  *         description: MFA no configurado o código inválido
  *       403:
- *         description: Requiere rol Administrador
+ *         description: Requiere rol Super_Administrador
  *       409:
  *         description: MFA ya habilitado
  */

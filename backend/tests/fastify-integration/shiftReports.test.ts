@@ -70,7 +70,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetIntegrationDb();
   const actor = await prismaDirect.user.create({
-    data: { username: "reports-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "reports-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (
@@ -149,7 +149,10 @@ describe("Spec 017 shift reports on Fastify", () => {
     );
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
     expect((await http("POST", url, payload("Denegada"))).status).toBe(403);
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Super_Administrador" },
+    });
     await prismaDirect.shiftReport.update({
       where: { id: "shift-report" },
       data: { status: "closed" },
@@ -549,7 +552,10 @@ describe("Spec 017 shift reports on Fastify", () => {
       expect((await http(method, url, payload)).status).toBe(403);
     }
 
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Super_Administrador" },
+    });
 
     // Query validation
     for (const badQuery of [

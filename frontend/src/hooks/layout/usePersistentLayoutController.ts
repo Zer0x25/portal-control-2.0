@@ -84,7 +84,7 @@ export const usePersistentLayoutController = () => {
     }
   })();
 
-  const canShowDevPanel = currentUser?.role === "Administrador" && devModeEnabled;
+  const canShowDevPanel = currentUser?.role === "Super_Administrador" && devModeEnabled;
 
   const goHome = () => {
     if (homeFabTarget) {

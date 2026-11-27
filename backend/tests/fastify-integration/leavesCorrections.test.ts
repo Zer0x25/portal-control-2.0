@@ -89,7 +89,7 @@ beforeEach(async () => {
   const actor = await prismaDirect.user.create({
     data: {
       username: "absence-admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       passwordHash: "test-only",
       employeeId: employee.id,
     },
@@ -533,7 +533,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(await prismaDirect.correctionRequest.count()).toBe(1);
     expect(SocketService.emit).not.toHaveBeenCalled();
   });
-  it.each(["Usuario", "Administrador"])(
+  it.each(["Usuario", "Super_Administrador"])(
     "denies inconsistent record ownership for %s",
     async (role) => {
       await prismaDirect.employee.create({
@@ -809,7 +809,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     });
     expect(audit).toMatchObject({
       actorUsername: "absence-admin",
-      metadata: { actorRole: "Administrador" },
+      metadata: { actorRole: "Super_Administrador" },
     });
   });
   it("rolls back pending claim when the approved record write fails", async () => {

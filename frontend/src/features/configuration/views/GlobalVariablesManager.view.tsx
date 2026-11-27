@@ -394,7 +394,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
             </div>
           </section>
 
-          {currentUser?.role === "Administrador" && (
+          {currentUser?.role === "Super_Administrador" && (
             <section className="space-y-6 lg:col-span-2">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-token-status-info rounded-sm"></div>
@@ -453,7 +453,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
             </section>
           )}
 
-          {currentUser?.role === "Administrador" && (
+          {currentUser?.role === "Super_Administrador" && (
             <section className="space-y-6 lg:col-span-2">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-token-accent-brand rounded-sm"></div>

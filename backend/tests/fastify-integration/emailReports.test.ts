@@ -65,7 +65,7 @@ beforeEach(async () => {
   smtp.verify.mockResolvedValue(true);
   smtp.sendMail.mockResolvedValue({ messageId: "fake-only" });
   const actor = await prismaDirect.user.create({
-    data: { username: "mail-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "mail-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (
@@ -479,9 +479,9 @@ describe("Spec019 email/reports on Fastify", () => {
     expect(JSON.stringify(audits)).not.toContain(freshSecret);
   });
 
-  it("permits Supervisor_Elevado and excludes Supervisor/Reloj/Fiscalizador/Usuario using persisted role", async () => {
+  it("permits Administrador and excludes Supervisor/Reloj/Fiscalizador/Usuario using persisted role", async () => {
     for (const role of [
-      "Supervisor_Elevado",
+      "Administrador",
       "Supervisor",
       "Reloj_Control",
       "Fiscalizador",
@@ -489,10 +489,10 @@ describe("Spec019 email/reports on Fastify", () => {
     ] as const) {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
       expect((await http("GET", "/api/email/config")).status).toBe(
-        role === "Supervisor_Elevado" ? 200 : 403,
+        role === "Administrador" ? 200 : 403,
       );
       expect((await http("GET", "/api/scheduled-reports")).status).toBe(
-        role === "Supervisor_Elevado" ? 200 : 403,
+        role === "Administrador" ? 200 : 403,
       );
     }
   });

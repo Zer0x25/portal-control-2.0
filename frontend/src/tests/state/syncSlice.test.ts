@@ -49,7 +49,7 @@ const createAdminSyncState = (
   if (lastSyncTime !== null) localStorage.setItem("lastSyncTime", lastSyncTime.toString());
 
   const state = {
-    currentUser: { id: "admin-1", role: "Administrador" },
+    currentUser: { id: "admin-1", role: "Super_Administrador" },
     lastSyncTime,
     isSyncing: false,
     syncState: "success",
@@ -231,7 +231,7 @@ describe("sync de sesión ante cambio de instancia", () => {
     queryFn.mockClear();
 
     const state = {
-      currentUser: { id: "admin-1", role: "Administrador" },
+      currentUser: { id: "admin-1", role: "Super_Administrador" },
       lastSyncTime: Date.now(),
       isSyncing: false,
       syncState: "success",

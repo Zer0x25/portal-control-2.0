@@ -36,13 +36,13 @@ describe("useGovernanceData", () => {
     ]);
   });
 
-  it("reads tab from query param when valid for Administrador", () => {
+  it("reads tab from query param when valid for Super_Administrador", () => {
     currentSearchParams = new URLSearchParams("tab=security");
     const { result } = renderHook(() => useGovernanceData());
     expect(result.current.activeTab).toBe("security");
   });
 
-  it("normalizes disallowed tabs to integrity for Supervisor_Elevado and Fiscalizador", () => {
+  it("normalizes disallowed tabs to integrity for Administrador and Fiscalizador", () => {
     currentRole = ROLES.SUPERVISOR_ELEVATED;
     currentSearchParams = new URLSearchParams("tab=security");
     const { result } = renderHook(() => useGovernanceData());

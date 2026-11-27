@@ -47,7 +47,7 @@ it("preserves degraded/200 health without exposing internal details when unauthe
   expect(body.data.database.size).toBeUndefined();
 });
 
-it("exposes full health details only to Administrador and persistent instanceId publicly", async () => {
+it("exposes full health details only to Super_Administrador and persistent instanceId publicly", async () => {
   const first = await app.inject({ url: "/api/health" });
   expect(first.statusCode).toBe(200);
   const data1 = first.json().data;
@@ -60,7 +60,7 @@ it("exposes full health details only to Administrador and persistent instanceId 
   expect(second.json().data.instanceId).toBe(data1.instanceId);
 
   const admin = await prismaDirect.user.create({
-    data: { username: "health-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "health-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   const { token: adminToken } = await AuthService.createSession(
     admin.id,

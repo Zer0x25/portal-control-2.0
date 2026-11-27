@@ -34,7 +34,7 @@ describe("useAuth store subscription", () => {
         currentUser: {
           id: "auth-user",
           username: "admin",
-          role: "Administrador",
+          role: "Super_Administrador",
           lastModified: Date.now(),
           syncStatus: "synced",
           isDeleted: false,
@@ -92,7 +92,7 @@ describe("useAuth store subscription", () => {
         currentUser: {
           id: "auth-shell-user",
           username: "admin",
-          role: "Administrador",
+          role: "Super_Administrador",
           lastModified: Date.now(),
           syncStatus: "synced",
           isDeleted: false,
@@ -107,7 +107,7 @@ describe("useAuth store subscription", () => {
         currentUser: {
           id: "auth-shell-user",
           username: "admin",
-          role: "Administrador",
+          role: "Super_Administrador",
           lastModified: Date.now(),
           syncStatus: "synced",
           isDeleted: false,

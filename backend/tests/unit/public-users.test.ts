@@ -31,7 +31,7 @@ import { UserService } from "../../src/services/UserService";
 const row = {
   id: "user-public",
   username: "alice",
-  role: "Supervisor_Elevado",
+  role: "Administrador",
   employeeId: "emp",
   createdAt: new Date("2026-10-01T12:00:00Z"),
   updatedAt: new Date("2026-10-02T12:00:00Z"),
@@ -49,7 +49,7 @@ function assertPublic(value: unknown) {
   expect(value).toMatchObject({
     id: row.id,
     username: row.username,
-    role: "Supervisor_Elevado",
+    role: "Administrador",
     employeeId: "emp",
     mustChangePassword: true,
     mfaEnabled: true,
@@ -101,7 +101,7 @@ describe("Public user DTO allowlist at all service/socket boundaries", () => {
             {
               username: "alice",
               password: "supplied-password",
-              role: "Supervisor_Elevado",
+              role: "Administrador",
               employeeId: "emp",
             },
             "admin",

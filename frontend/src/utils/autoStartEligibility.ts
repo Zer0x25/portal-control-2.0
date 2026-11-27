@@ -10,7 +10,7 @@ export const shouldLoadAutoStartSchedule = (
   if (role === "Reloj_Control") return true;
 
   return (
-    (role === "Administrador" || role === "Supervisor_Elevado") &&
+    (role === "Super_Administrador" || role === "Administrador") &&
     employee.position === "Reloj_Control"
   );
 };

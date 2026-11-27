@@ -18,7 +18,7 @@ test("cuenta de prueba Usuario no accede a las vistas del piloto", async ({ page
 for (const entry of [
   { role: "Supervisor", allowed: ["dashboard-supervisor"], fallback: "dashboard-supervisor" },
   {
-    role: "Supervisor_Elevado",
+    role: "Administrador",
     allowed: ["dashboard", "dashboard-supervisor", "logbook"],
     fallback: "dashboard",
   },

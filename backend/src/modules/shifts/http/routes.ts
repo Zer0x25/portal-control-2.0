@@ -29,7 +29,7 @@ export const shiftsPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (req) => {
     if (
       !req.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor"].includes(req.user.role)
+      !["Super_Administrador", "Administrador", "Supervisor"].includes(req.user.role)
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };

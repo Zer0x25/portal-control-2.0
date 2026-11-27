@@ -129,7 +129,7 @@ describe("Shift application TDD", () => {
 
   it("forwards search parameter on assignments and actor on bulkAssignments", async () => {
     const f = fixture();
-    await f.flows.assignments({ search: "Juan" }, { role: "Administrador" });
+    await f.flows.assignments({ search: "Juan" }, { role: "Super_Administrador" });
     expect(f.service.assignments).toHaveBeenCalledWith(expect.objectContaining({ search: "Juan" }));
     await f.flows.bulkAssignments([], "admin-user");
     expect(f.service.bulkAssignments).toHaveBeenCalledWith([], "admin-user");

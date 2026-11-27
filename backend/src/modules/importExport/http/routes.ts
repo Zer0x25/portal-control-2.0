@@ -25,7 +25,7 @@ export const importExportPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (req) => {
     if (
       !req.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+      !["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
         req.user.role,
       )
     )

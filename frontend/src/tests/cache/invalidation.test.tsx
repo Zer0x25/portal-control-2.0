@@ -661,7 +661,11 @@ describe("Invalidacion de queries tras mutacion (spec 035 T5, AC2)", () => {
     // Los hooks lectores que dependen de la sesion: sin usuario y sin token
     // la query queda **deshabilitada** y no habria re-fetch que verificar.
     useStore.setState({
-      currentUser: { id: "u-1", username: "tester", role: "Administrador" } as unknown as User,
+      currentUser: {
+        id: "u-1",
+        username: "tester",
+        role: "Super_Administrador",
+      } as unknown as User,
       isAuthenticated: true,
     });
     authTokenStore.setToken("token-de-prueba");

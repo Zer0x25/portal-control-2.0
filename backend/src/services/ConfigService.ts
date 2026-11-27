@@ -33,7 +33,7 @@ export class ConfigService {
    * Retrieves a single configuration value, applying role-based protection.
    */
   static async get(key: string, role?: string) {
-    const isElevated = role === "Administrador" || role === "Supervisor_Elevado";
+    const isElevated = role === "Super_Administrador" || role === "Administrador";
 
     if (this.PROTECTED_KEYS.has(key) && !isElevated) {
       throw new Error("FORBIDDEN");
@@ -67,7 +67,7 @@ export class ConfigService {
    * Lists all configuration values, filtering those protected by role.
    */
   static async list(role?: string) {
-    const isElevated = role === "Administrador" || role === "Supervisor_Elevado";
+    const isElevated = role === "Super_Administrador" || role === "Administrador";
 
     const configs = await prisma.systemConfig.findMany({
       select: { key: true, value: true },

@@ -27,7 +27,7 @@ vi.mock("../../../hooks/useAuth", () => ({
     currentUser: {
       id: "u1",
       username: "admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       employeeId: "e1",
       lastModified: 0,
       syncStatus: "synced",
@@ -54,7 +54,7 @@ vi.mock("../../../hooks/useUsers", () => ({
         id: "u1",
         username: "admin",
         employeeId: "e1",
-        role: "Administrador",
+        role: "Super_Administrador",
         lastModified: 0,
         syncStatus: "synced",
         isDeleted: false,

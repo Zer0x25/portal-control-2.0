@@ -82,8 +82,8 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
   };
   const requireAdminUser = (context: AuthFlowContext) => {
     const user = requireUser(context);
-    if (user.role !== "Administrador") {
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    if (user.role !== "Super_Administrador") {
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
     }
     return user;
   };

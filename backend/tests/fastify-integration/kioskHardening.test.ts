@@ -42,7 +42,7 @@ beforeEach(async () => {
   const admin = await prismaDirect.user.create({
     data: {
       username: "kiosk-hardening-admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       passwordHash: "test-only",
     },
   });

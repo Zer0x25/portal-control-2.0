@@ -13,7 +13,7 @@ export const kpisPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+      !["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
         request.user.role,
       )
     )

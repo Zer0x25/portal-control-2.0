@@ -71,7 +71,7 @@ vi.mock("../../../features/auth/components/MFALoginModal.container", () => ({
           onSuccess({
             id: "u-mfa",
             username: "mfa-admin",
-            role: "Administrador",
+            role: "Super_Administrador",
             mustChangePassword: false,
           })
         }

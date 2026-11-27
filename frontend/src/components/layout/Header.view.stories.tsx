@@ -19,7 +19,7 @@ const meta = {
   component: Header,
   args: {
     toggleSidebar: () => undefined,
-    currentUser: { role: "Administrador" },
+    currentUser: { role: "Super_Administrador" },
     welcomeName: "Ana Pérez",
     systemStatus: "Operativo",
     soundEnabled: true,

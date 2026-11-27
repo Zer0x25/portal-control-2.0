@@ -42,7 +42,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetIntegrationDb();
   const user = await prismaDirect.user.create({
-    data: { username: "employee-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "employee-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = user.id;
   token = (
@@ -337,12 +337,12 @@ describe("Spec 013 employees on Fastify", () => {
     for (const [, event] of employeeEvents()) withoutPin(event as Record<string, unknown>);
   });
   it("allows all existing supervisor roles and reuses the linked account on update", async () => {
-    for (const role of ["Supervisor", "Supervisor_Elevado", "Reloj_Control"] as const) {
+    for (const [index, role] of ["Supervisor", "Administrador", "Reloj_Control"].entries()) {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
       const response = await http("POST", "/api/employees", {
         ...input,
         id: `EMP-${role}`,
-        rut: `${10000000 + role.length}-0`,
+        rut: `${10000000 + index}-0`,
       });
       expect(response.status).toBe(201);
     }

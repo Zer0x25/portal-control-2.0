@@ -19,7 +19,7 @@ describe("auto-start scheduling eligibility", () => {
     expect(shouldLoadAutoStartSchedule("Reloj_Control", "EMP-1", clockEmployee)).toBe(true);
   });
 
-  it.each(["Administrador", "Supervisor_Elevado"] as const)(
+  it.each(["Super_Administrador", "Administrador"] as const)(
     "loads schedule for %s only when the associated employee is Reloj_Control",
     (role) => {
       expect(shouldLoadAutoStartSchedule(role, "EMP-1", clockEmployee)).toBe(true);
@@ -31,8 +31,8 @@ describe("auto-start scheduling eligibility", () => {
 
   it.each([
     ["Reloj_Control", undefined, clockEmployee],
-    ["Administrador", undefined, clockEmployee],
-    ["Administrador", "EMP-1", undefined],
+    ["Super_Administrador", undefined, clockEmployee],
+    ["Super_Administrador", "EMP-1", undefined],
     ["Usuario", "EMP-1", clockEmployee],
     ["Supervisor", "EMP-1", clockEmployee],
   ] as const)("does not load schedule for an ineligible profile", (role, employeeId, employee) => {

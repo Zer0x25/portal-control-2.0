@@ -20,7 +20,12 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   it("login guarda el token y devuelve la respuesta", async () => {
     server.use(
       http.post("http://localhost:4000/api/auth/login", () =>
-        HttpResponse.json({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-1" }),
+        HttpResponse.json({
+          userId: "u1",
+          username: "ana",
+          role: "Super_Administrador",
+          token: "jwt-1",
+        }),
       ),
     );
 
@@ -82,7 +87,12 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   it("validateMFACode guarda el token y no cierra la sesion", async () => {
     server.use(
       http.post("http://localhost:4000/api/auth/mfa/validate", () =>
-        HttpResponse.json({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-2" }),
+        HttpResponse.json({
+          userId: "u1",
+          username: "ana",
+          role: "Super_Administrador",
+          token: "jwt-2",
+        }),
       ),
     );
     const unauthorized = vi.fn();

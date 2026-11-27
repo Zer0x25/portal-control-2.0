@@ -24,7 +24,7 @@ export const useAboutModalController = () => {
     setClickCount(newClickCount);
 
     if (newClickCount >= 10) {
-      if (currentUser?.role === "Administrador") {
+      if (currentUser?.role === "Super_Administrador") {
         const isDevModeCurrentlyEnabled = localStorage.getItem(STORAGE_KEYS.DEV_MODE) === "true";
         const newDevModeState = !isDevModeCurrentlyEnabled;
 
@@ -47,7 +47,7 @@ export const useAboutModalController = () => {
             window.location.reload();
           }, 1500);
         }
-      } else if (currentUser?.role === "Supervisor_Elevado") {
+      } else if (currentUser?.role === "Administrador") {
         setShowMonkey(true);
       }
 

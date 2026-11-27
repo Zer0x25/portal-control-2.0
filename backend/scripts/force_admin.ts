@@ -13,7 +13,7 @@ async function forceUpdate() {
     data: {
       username: "admin",
       passwordHash: hashedPassword,
-      role: "Administrador",
+      role: "Super_Administrador",
     },
   });
 

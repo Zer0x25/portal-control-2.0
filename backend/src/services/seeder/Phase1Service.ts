@@ -41,8 +41,8 @@ export class Phase1Service {
       {
         key: "AUTH_SESSION_DURATIONS",
         value: JSON.stringify({
-          Administrador: 10,
-          Supervisor_Elevado: 4,
+          Super_Administrador: 10,
+          Administrador: 4,
           Supervisor: 1,
           Fiscalizador: 1,
           Reloj_Control: 12,
@@ -176,7 +176,13 @@ export class Phase1Service {
         username,
         passwordHash,
         role:
-          i < 2 ? "Administrador" : i < 10 ? "Supervisor" : i < 15 ? "Reloj_Control" : "Usuario",
+          i < 2
+            ? "Super_Administrador"
+            : i < 10
+              ? "Supervisor"
+              : i < 15
+                ? "Reloj_Control"
+                : "Usuario",
         employeeId: emp.id,
       });
       existingUsernames.add(username);

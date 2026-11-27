@@ -39,7 +39,7 @@ describe("ClockingPanel Component", () => {
     { id: "3", name: "José Álvarez", area: "Administración", status: "Activo" },
   ];
 
-  const mockCurrentUser = { id: "admin-1", username: "admin", role: "Administrador" };
+  const mockCurrentUser = { id: "admin-1", username: "admin", role: "Super_Administrador" };
 
   beforeEach(() => {
     vi.clearAllMocks();

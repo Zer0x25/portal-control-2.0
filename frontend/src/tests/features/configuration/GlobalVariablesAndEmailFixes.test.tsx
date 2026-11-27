@@ -30,7 +30,7 @@ vi.mock("../../../hooks/useEmployees", () => ({
 }));
 
 vi.mock("../../../hooks/useAuth", () => ({
-  useAuth: () => ({ currentUser: { id: "u1", role: "Administrador" } }),
+  useAuth: () => ({ currentUser: { id: "u1", role: "Super_Administrador" } }),
 }));
 
 vi.mock("../../../services/authService", () => ({

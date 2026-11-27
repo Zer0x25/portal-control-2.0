@@ -47,7 +47,7 @@ describe("MFALoginModal", () => {
 
   it("llama al flujo de exito con el usuario autenticado cuando el codigo es valido", async () => {
     const onSuccess = vi.fn();
-    const user = { id: "u1", username: "ana", role: "Administrador" };
+    const user = { id: "u1", username: "ana", role: "Super_Administrador" };
     validateMFACodeMock.mockResolvedValue(user);
 
     render(<MFALoginModal isOpen={true} onSuccess={onSuccess} onCancel={vi.fn()} />);

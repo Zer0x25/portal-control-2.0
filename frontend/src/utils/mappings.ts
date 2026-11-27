@@ -94,22 +94,22 @@ export const USER_ROLES: UserRole[] = [
   "Reloj_Control",
   "Supervisor",
   "Fiscalizador",
-  "Supervisor_Elevado",
   "Administrador",
+  "Super_Administrador",
 ];
 
 export const ROLES: Record<string, UserRole> = {
   USER: "Usuario",
   CLOCK_CONTROL: "Reloj_Control",
   SUPERVISOR: "Supervisor",
-  SUPERVISOR_ELEVATED: "Supervisor_Elevado",
-  ADMIN: "Administrador",
+  SUPERVISOR_ELEVATED: "Administrador",
+  ADMIN: "Super_Administrador",
   AUDITOR: "Fiscalizador",
 };
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  Administrador: 5,
-  Supervisor_Elevado: 4,
+  Super_Administrador: 5,
+  Administrador: 4,
   Supervisor: 3,
   Reloj_Control: 2,
   Fiscalizador: 1,

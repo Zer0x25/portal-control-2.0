@@ -264,12 +264,12 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   };
 
   const canArchive = canPerformAction(currentUser?.role as UserRole, [
+    "Super_Administrador",
     "Administrador",
-    "Supervisor_Elevado",
   ]);
   const canEdit = canPerformAction(currentUser?.role as UserRole, [
+    "Super_Administrador",
     "Administrador",
-    "Supervisor_Elevado",
     "Supervisor",
     "Reloj_Control",
   ]);

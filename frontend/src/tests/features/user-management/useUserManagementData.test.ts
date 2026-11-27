@@ -18,7 +18,10 @@ const {
   resetEmployeePinMock: vi.fn(),
 }));
 
-let mockCurrentUser: { id: string; role: string } | null = { id: "u-admin", role: "Administrador" };
+let mockCurrentUser: { id: string; role: string } | null = {
+  id: "u-admin",
+  role: "Super_Administrador",
+};
 
 vi.mock("../../../hooks/useUsers", () => ({
   useUsers: () => ({
@@ -26,7 +29,7 @@ vi.mock("../../../hooks/useUsers", () => ({
       {
         id: "u-admin",
         username: "admin",
-        role: "Administrador",
+        role: "Super_Administrador",
         lastModified: 0,
         syncStatus: "synced",
         isDeleted: false,
@@ -79,7 +82,7 @@ vi.mock("../../../hooks/useIntersectionObserver", () => ({
 describe("useUserManagementData", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCurrentUser = { id: "u-admin", role: "Administrador" };
+    mockCurrentUser = { id: "u-admin", role: "Super_Administrador" };
   });
 
   it("enforces canManageUser and blocks edit when unauthorized", () => {
@@ -109,8 +112,8 @@ describe("useUserManagementData", () => {
     expect(result.current.isFormVisible).toBe(false);
   });
 
-  it("enables Supervisor_Elevado to create and manage non-Administrador users only", () => {
-    mockCurrentUser = { id: "u-sup", role: "Supervisor_Elevado" };
+  it("enables Administrador to create and manage non-Super_Administrador users only", () => {
+    mockCurrentUser = { id: "u-sup", role: "Administrador" };
 
     const { result } = renderHook(() => useUserManagementData());
 
@@ -119,7 +122,7 @@ describe("useUserManagementData", () => {
       result.current.canManageUser({
         id: "u-admin",
         username: "admin",
-        role: "Administrador",
+        role: "Super_Administrador",
         lastModified: 0,
         syncStatus: "synced",
         isDeleted: false,
@@ -129,7 +132,7 @@ describe("useUserManagementData", () => {
       result.current.canManageUser({
         id: "u-sup",
         username: "sup",
-        role: "Supervisor_Elevado",
+        role: "Administrador",
         lastModified: 0,
         syncStatus: "synced",
         isDeleted: false,

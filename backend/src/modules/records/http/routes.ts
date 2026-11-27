@@ -41,7 +41,7 @@ export const recordsPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+      !["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
         request.user.role,
       )
     )
@@ -55,7 +55,7 @@ export const recordsPlugin: FastifyPluginAsync<{
   const writer: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(request.user.role)
+      !["Super_Administrador", "Administrador", "Reloj_Control"].includes(request.user.role)
     ) {
       throw new ForbiddenError("Acceso denegado: Este rol es de solo lectura para jornadas");
     }
@@ -91,8 +91,8 @@ export const recordsPlugin: FastifyPluginAsync<{
           if (
             !request.user?.role ||
             ![
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Supervisor",
               "Reloj_Control",
               "Fiscalizador",

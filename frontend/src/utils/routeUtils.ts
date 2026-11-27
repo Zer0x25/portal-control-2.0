@@ -19,8 +19,8 @@ export const getDefaultRouteForRole = (
     case "Fiscalizador":
       return ROUTES.TIME_CONTROL;
     case "Reloj_Control":
+    case "Super_Administrador":
     case "Administrador":
-    case "Supervisor_Elevado":
     default:
       return isControlInternoEnabled ? ROUTES.DASHBOARD : ROUTES.SUPERVISOR_DASHBOARD;
   }

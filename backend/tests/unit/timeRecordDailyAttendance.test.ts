@@ -32,7 +32,7 @@ describe("TimeRecordService.dailyAttendance", () => {
 
     const series = await TimeRecordService.dailyAttendance(
       { desde: "2026-03-05", hasta: "2026-03-06" },
-      { id: "u", username: "admin", role: "Administrador" },
+      { id: "u", username: "admin", role: "Super_Administrador" },
     );
 
     expect(series).toEqual([

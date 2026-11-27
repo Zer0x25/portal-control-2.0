@@ -3,9 +3,9 @@ import type { AuthUser } from "../application/authenticate";
 
 export function sessionDurationHoursForRole(role: string): number {
   switch (role) {
-    case "Administrador":
+    case "Super_Administrador":
       return 10;
-    case "Supervisor_Elevado":
+    case "Administrador":
     case "Supervisor Elevado":
       return 4;
     case "Supervisor":
@@ -22,7 +22,7 @@ export function sessionDurationHoursForRole(role: string): number {
 }
 
 export function sessionLimitForRole(role: string): number {
-  if (role === "Administrador") return 10;
+  if (role === "Super_Administrador") return 10;
   if (role === "Reloj_Control") return 2;
   return 1;
 }

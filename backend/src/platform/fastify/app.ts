@@ -257,7 +257,7 @@ export function buildFastifyApp(
     if (token) {
       try {
         const user = await deps.authenticate(token, request.url, request.method);
-        isAdmin = user.role === "Administrador";
+        isAdmin = user.role === "Super_Administrador";
       } catch {
         // Public health falls back to minimal payload when token is invalid or expired.
       }

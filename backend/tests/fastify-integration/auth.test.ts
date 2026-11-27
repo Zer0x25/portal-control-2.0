@@ -155,7 +155,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
   it.each([
     ["Usuario", 1, 3],
     ["Reloj_Control", 2, 3],
-    ["Administrador", 10, 11],
+    ["Super_Administrador", 10, 11],
   ] as const)(
     "serializes concurrent %s logins to %s sessions with distinct jti",
     async (role, limit, attempts) => {
@@ -223,7 +223,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     ).toBe(1);
   });
   it("rejects persisted session expiry and removes expired row", async () => {
-    await user("alice", "Administrador");
+    await user("alice", "Super_Administrador");
     const token = (await login()).json().token;
     await prismaDirect.activeSession.update({
       where: { tokenHash: hash(token) },
@@ -236,7 +236,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect(await prismaDirect.activeSession.count()).toBe(0);
   });
   it("real QR setup and TOTP verify enable MFA, then challenge completion creates exactly one session and updates lastLogin", async () => {
-    const actor = await user("alice", "Administrador");
+    const actor = await user("alice", "Super_Administrador");
     const access = (await login()).json().token;
     const afterLogin = await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } });
     expect(afterLogin.lastLogin).toBeInstanceOf(Date);
@@ -591,7 +591,7 @@ describe("Spec 010 MFA and PIN security", () => {
           mfaFailedAttempts: expiry === "block" ? 5 : 4,
           mfaBlockedUntil: expiry === "block" ? new Date(0) : null,
           mfaFailureWindowStartedAt: expiry === "block" ? new Date() : new Date(0),
-          role: "Administrador",
+          role: "Super_Administrador",
         },
       });
       expect((await complete(pending)).statusCode).toBe(401);
@@ -600,7 +600,7 @@ describe("Spec 010 MFA and PIN security", () => {
       ).toBe(1);
       const accepted = await complete(pending, validCode(actor));
       expect(accepted.statusCode).toBe(200);
-      expect(accepted.json().role).toBe("Administrador");
+      expect(accepted.json().role).toBe("Super_Administrador");
       expect(await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).toMatchObject({
         mfaFailedAttempts: 0,
         mfaBlockedUntil: null,
@@ -638,7 +638,7 @@ describe("Spec 010 MFA and PIN security", () => {
       .spyOn((await import("../../src/services/socketService")).SocketService, "emit")
       .mockImplementation(() => {});
     const updated = await service.updateUser(actor.id, { username: actor.username }, "test");
-    const listed = await service.getAllUsers({ requesterRole: "Administrador" });
+    const listed = await service.getAllUsers({ requesterRole: "Super_Administrador" });
     const emp = await employee();
     const created = await service.createUser(
       { username: "dto-created", password, role: "Supervisor", employeeId: emp.id },
@@ -765,7 +765,7 @@ describe("Spec 010 MFA and PIN security", () => {
 
   it("[BUG-03][BUG-08][DUDA-09] returns canonical underscore roles, blocks Archivado sessions, and rejects ?token=", async () => {
     const reloj = await user("reloj-actor", "Reloj_Control");
-    const supElev = await user("supelev-actor", "Supervisor_Elevado");
+    const supElev = await user("supelev-actor", "Administrador");
 
     const rLogin = await login("reloj-actor");
     expect(rLogin.statusCode).toBe(200);
@@ -773,7 +773,7 @@ describe("Spec 010 MFA and PIN security", () => {
 
     const sLogin = await login("supelev-actor");
     expect(sLogin.statusCode).toBe(200);
-    expect(sLogin.json()).toMatchObject({ role: "Supervisor_Elevado", mfaEnabled: false });
+    expect(sLogin.json()).toMatchObject({ role: "Administrador", mfaEnabled: false });
     const supToken = sLogin.json().token as string;
 
     expect(
@@ -811,7 +811,7 @@ describe("Spec 010 MFA and PIN security", () => {
       ).statusCode,
     ).toBe(403);
 
-    const admin = await user("admin-mfa", "Administrador");
+    const admin = await user("admin-mfa", "Super_Administrador");
     const adminToken = (await login(admin.username)).json().token as string;
     // Verify before setup must return 400 (not 500)
     expect(
@@ -917,7 +917,7 @@ describe("Spec 010 MFA and PIN security", () => {
     const forceUserSpy = vi
       .spyOn(SocketService, "emitForceLogoutToUser")
       .mockImplementation(() => {});
-    const admin = await user("root-admin", "Administrador");
+    const admin = await user("root-admin", "Super_Administrador");
     const target = await user("MixedCaseUser", "Usuario");
     const adminToken = (await login(admin.username)).json().token as string;
     const targetToken = (await login(target.username)).json().token as string;

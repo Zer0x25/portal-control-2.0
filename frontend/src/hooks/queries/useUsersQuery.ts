@@ -12,7 +12,7 @@ import { useStore } from "../../store/useStore";
  * `SENSITIVE_QUERY_ROOTS`): en un dispositivo compartido no se conserva nada
  * entre sesiones.
  *
- * Contrato HTTP (`GET /api/users`): solo `Administrador` y `Supervisor_Elevado`
+ * Contrato HTTP (`GET /api/users`): solo `Super_Administrador` y `Administrador`
  * pueden consultar el directorio de usuarios; otros roles mantienen la query
  * deshabilitada para evitar 403 en vistas compartidas (Dashboard, Bitácora).
  */
@@ -21,7 +21,7 @@ export const useUsersQuery = (options: { readonly enabled?: boolean } = {}) => {
   const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   const currentUserRole = useStore((state) => state.currentUser?.role);
   const canReadUsers =
-    currentUserRole === "Administrador" || currentUserRole === "Supervisor_Elevado";
+    currentUserRole === "Super_Administrador" || currentUserRole === "Administrador";
 
   return useQuery<User[]>({
     queryKey: queryKeys.users(),

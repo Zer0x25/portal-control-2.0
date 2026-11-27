@@ -47,19 +47,19 @@ describe("useHeaderController", () => {
     mocks.currentUser = {
       id: "u-admin",
       username: "admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       mfaEnabled: false,
     };
   });
 
-  it("habilita canConfigureMfa solo para Administrador sin MFA habilitado", () => {
+  it("habilita canConfigureMfa solo para Super_Administrador sin MFA habilitado", () => {
     const { result, rerender } = renderHook(() => useHeaderController());
     expect(result.current.canConfigureMfa).toBe(true);
 
     mocks.currentUser = {
       id: "u-admin",
       username: "admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       mfaEnabled: true,
     };
     rerender();
@@ -68,7 +68,7 @@ describe("useHeaderController", () => {
     mocks.currentUser = {
       id: "u-sup",
       username: "sup",
-      role: "Supervisor_Elevado",
+      role: "Administrador",
       mfaEnabled: false,
     };
     rerender();

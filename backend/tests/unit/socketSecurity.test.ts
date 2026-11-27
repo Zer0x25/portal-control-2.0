@@ -13,7 +13,7 @@ async function fixture(
   principals: Record<
     string,
     { id: string; username: string; role: string; employeeId?: string }
-  > = { valid: { id: "own", username: "owner", role: "Administrador" } },
+  > = { valid: { id: "own", username: "owner", role: "Super_Administrador" } },
 ) {
   const server = createServer();
   const authorize = vi.fn(async (tokens: string[]) => new Set(tokens));
@@ -125,7 +125,7 @@ it("revalidates idle clients on the periodic sweep and releases its timer on clo
 
 it("enforces role and employee policy over real websocket frames without leaking source payloads", async () => {
   const f = await fixture({
-    admin: { id: "admin", username: "admin", role: "Administrador" },
+    admin: { id: "admin", username: "admin", role: "Super_Administrador" },
     audit: { id: "audit", username: "audit", role: "Fiscalizador" },
     worker: { id: "worker", username: "worker", role: "Usuario", employeeId: "employee" },
   });

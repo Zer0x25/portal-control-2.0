@@ -34,7 +34,7 @@ describe("useReportsQuery authorization and enablement", () => {
     client.clear();
   });
 
-  it.each(["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"])(
+  it.each(["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"])(
     "loads reports for the authorized role %s",
     async (role) => {
       mocks.currentUser = { role };
@@ -54,7 +54,7 @@ describe("useReportsQuery authorization and enablement", () => {
   });
 
   it("supports disabling the report query for an automation consumer", () => {
-    mocks.currentUser = { role: "Administrador" };
+    mocks.currentUser = { role: "Super_Administrador" };
 
     renderHook(() => useReportsQuery({}, { enabled: false }), { wrapper });
 

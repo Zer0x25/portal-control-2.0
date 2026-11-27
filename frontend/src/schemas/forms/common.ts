@@ -25,8 +25,8 @@ export const USER_ROLES = [
   "Usuario",
   "Reloj_Control",
   "Supervisor",
+  "Super_Administrador",
   "Administrador",
-  "Supervisor_Elevado",
   "Fiscalizador",
 ] as const;
 

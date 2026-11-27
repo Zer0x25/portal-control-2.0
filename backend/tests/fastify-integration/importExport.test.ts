@@ -49,7 +49,7 @@ beforeEach(async () => {
   await resetIntegrationDb();
   clientIP = "192.0.2." + ++ipNumber;
   const actor = await prismaDirect.user.create({
-    data: { username: "export-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "export-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (

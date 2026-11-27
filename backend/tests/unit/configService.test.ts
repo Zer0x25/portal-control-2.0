@@ -71,7 +71,7 @@ describe("ConfigService unit tests", () => {
       await expect(ConfigService.get("SMTP_CONFIG", undefined)).rejects.toThrow("FORBIDDEN");
     });
 
-    it("allows elevated users (Administrador or Supervisor_Elevado) to access protected keys", async () => {
+    it("allows elevated users (Super_Administrador or Administrador) to access protected keys", async () => {
       const smtpPayload = { host: "smtp.mail.com", port: 587 };
       vi.mocked(prisma.systemConfig.findUnique).mockResolvedValueOnce({
         id: "1",
@@ -82,7 +82,7 @@ describe("ConfigService unit tests", () => {
         updatedBy: "admin",
       });
 
-      const result = await ConfigService.get("SMTP_CONFIG", "Administrador");
+      const result = await ConfigService.get("SMTP_CONFIG", "Super_Administrador");
       expect(result).toEqual(smtpPayload);
       expect(prisma.systemConfig.findUnique).toHaveBeenCalledWith({
         where: { key: "SMTP_CONFIG" },
@@ -97,10 +97,7 @@ describe("ConfigService unit tests", () => {
         updatedBy: "supervisor",
       });
 
-      const resultSupervisor = await ConfigService.get(
-        "EMAIL_NOTIFICATION_RULES",
-        "Supervisor_Elevado",
-      );
+      const resultSupervisor = await ConfigService.get("EMAIL_NOTIFICATION_RULES", "Administrador");
       expect(resultSupervisor).toEqual({ enabled: true });
     });
 
@@ -175,7 +172,7 @@ describe("ConfigService unit tests", () => {
         { key: "SMTP_CONFIG", value: JSON.stringify({ host: "smtp.example.com" }) },
       ]);
 
-      const listAdmin = await ConfigService.list("Administrador");
+      const listAdmin = await ConfigService.list("Super_Administrador");
       expect(listAdmin).toEqual([
         { key: "site_title", value: "Portal Control" },
         { key: "SMTP_CONFIG", value: { host: "smtp.example.com" } },

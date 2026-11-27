@@ -39,7 +39,7 @@ beforeEach(async () => {
   const actor = await prismaDirect.user.create({
     data: {
       username: "records-admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       passwordHash: "test-only",
       employeeId: employee.id,
     },
@@ -154,7 +154,7 @@ describe("Spec 014 records on Fastify", () => {
     ).toBe(429);
     await prismaDirect.user.update({
       where: { id: actorId },
-      data: { role: "Supervisor_Elevado" },
+      data: { role: "Administrador" },
     });
     expect((await http("POST", "/api/records/punch", { employeeId: "missing" })).status).toBe(404);
   });

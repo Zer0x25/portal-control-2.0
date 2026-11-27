@@ -18,7 +18,7 @@ export const shiftReportsPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(request.user.role)
+      !["Super_Administrador", "Administrador", "Reloj_Control"].includes(request.user.role)
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };
@@ -48,7 +48,7 @@ export const shiftReportsPlugin: FastifyPluginAsync<{
         async (request) => {
           if (
             !request.user?.role ||
-            !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(request.user.role)
+            !["Super_Administrador", "Administrador", "Reloj_Control"].includes(request.user.role)
           )
             throw new ForbiddenError("Acceso denegado");
         },

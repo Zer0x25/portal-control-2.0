@@ -7,7 +7,7 @@ import { queryKeys } from "../../lib/queryKeys";
 export const useProactiveDetectionsQuery = () => {
   const { currentUser } = useAuth();
   const isAuthorized =
-    currentUser?.role === "Administrador" || currentUser?.role === "Supervisor_Elevado";
+    currentUser?.role === "Super_Administrador" || currentUser?.role === "Administrador";
 
   return useQuery({
     queryKey: queryKeys.auditLogsProactiveDetections(),

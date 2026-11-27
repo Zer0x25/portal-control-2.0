@@ -19,7 +19,7 @@ export interface E2EWorker {
 }
 
 // Un login admin por proceso de Playwright: loginFast crea una sesión por
-// test y el rol Administrador evicta desde 10 concurrentes (el sweep largo
+// test y el rol Super_Administrador evicta desde 10 concurrentes (el sweep largo
 // caía redirigido a login). Cachear baja el pico de sesiones.
 let cachedAdminToken: string | null = null;
 

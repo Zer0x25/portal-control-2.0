@@ -35,7 +35,7 @@ const renderWithQueryClient = (ui: ReactNode) => {
 
 describe("Supervisor Role Component Permissions", () => {
   const mockSupervisor = { id: "sup-1", username: "supervisor", role: "Supervisor" };
-  const mockAdmin = { id: "admin-1", username: "admin", role: "Administrador" };
+  const mockAdmin = { id: "admin-1", username: "admin", role: "Super_Administrador" };
   const mockAddToast = vi.fn();
 
   beforeEach(() => {
@@ -70,7 +70,7 @@ describe("Supervisor Role Component Permissions", () => {
     renderWithQueryClient(
       <ClockingPanel
         isActionDisabled={true}
-        roleBasedTooltip="Solo Administradores pueden fichar"
+        roleBasedTooltip="Solo Super_Administradores pueden fichar"
       />,
     );
 

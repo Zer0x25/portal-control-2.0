@@ -26,7 +26,7 @@ const createTestQueryClient = () =>
 const createOrphanUser = () => ({
   id: "qa-orphan-user",
   username: "qa_e2e_auth_orphan",
-  role: "Administrador" as const,
+  role: "Super_Administrador" as const,
   employeeId: undefined,
   isDeleted: false,
   lastModified: Date.now(),
@@ -181,7 +181,7 @@ describe("orphan session and unauthenticated protected route redirect", () => {
     const authenticatedAdmin: User = {
       id: "admin-1",
       username: "admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       isDeleted: false,
       lastModified: Date.now(),
       syncStatus: "synced",

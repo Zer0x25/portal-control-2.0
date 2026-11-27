@@ -22,10 +22,10 @@ export const correctionsPlugin: FastifyPluginAsync<{
   const resolver: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor"].includes(request.user.role)
+      !["Super_Administrador", "Administrador", "Supervisor"].includes(request.user.role)
     )
       throw new ForbiddenError(
-        "Acceso denegado: Solo Supervisor, Supervisor Elevado o Administrador pueden resolver correcciones",
+        "Acceso denegado: Solo Supervisor, Supervisor Elevado o Super_Administrador pueden resolver correcciones",
       );
   };
   const params = z.object({ id: z.string() });

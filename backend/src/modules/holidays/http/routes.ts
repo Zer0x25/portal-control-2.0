@@ -34,7 +34,7 @@ interface HolidayPluginOptions {
   service: HolidayHttpService;
   authenticate: onRequestHookHandler;
 }
-const supervisorRoles = ["Administrador", "Supervisor_Elevado", "Supervisor"];
+const supervisorRoles = ["Super_Administrador", "Administrador", "Supervisor"];
 const yearSchema = z.object({ year: z.number().int().min(2000).max(2100).optional() }).optional();
 const paramsSchema = z.object({ id: z.string().min(1) });
 const querySchema = HolidayQuerySchema.extend({

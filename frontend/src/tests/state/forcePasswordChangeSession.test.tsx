@@ -32,7 +32,7 @@ describe("force password change session signal", () => {
     const currentUser = await useStore.getState()._handleSuccessfulLogin({
       userId,
       username: "forced-user",
-      role: "Administrador",
+      role: "Super_Administrador",
       employeeId: "employee-1",
       mustChangePassword: true,
     });

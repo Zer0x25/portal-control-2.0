@@ -10,8 +10,8 @@ import ToolsPanel from "./ToolsPanel";
 
 const ALL_DASHBOARD_ROLES: UserRole[] = [
   "Reloj_Control",
+  "Super_Administrador",
   "Administrador",
-  "Supervisor_Elevado",
   "Supervisor",
 ];
 

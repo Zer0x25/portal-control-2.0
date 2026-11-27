@@ -30,7 +30,7 @@ export const useQuickActionModalController = ({
   const { currentUser } = useAuth();
 
   const allowEdit =
-    currentUser && ["Administrador", "Supervisor_Elevado"].includes(currentUser.role);
+    currentUser && ["Super_Administrador", "Administrador"].includes(currentUser.role);
 
   useEffect(() => {
     if (isOpen) {

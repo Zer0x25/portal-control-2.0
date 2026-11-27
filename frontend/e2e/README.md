@@ -49,7 +49,7 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
 - Modales: `modal-dialog` genérico (con `role="dialog"` + `aria-labelledby`);
   MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`
   (disparado desde `mfa-setup-button` en el menú de usuario de `app-header`
-  solo para `Administrador` con `mfaEnabled === false`), y overlay de expiración
+  solo para `Super_Administrador` con `mfaEnabled === false`), y overlay de expiración
   `session-expired-overlay` (`role="alertdialog"`, `aria-labelledby="session-expired-title"`).
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
   `page-container`, `kiosk-step[data-step]`

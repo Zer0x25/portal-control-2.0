@@ -76,7 +76,9 @@ describe("useQuickNotesModalController", () => {
 
   it("allows deletion for owner or admin", () => {
     setup();
-    useAuthMock.mockReturnValue({ currentUser: { username: "admin", role: "Administrador" } });
+    useAuthMock.mockReturnValue({
+      currentUser: { username: "admin", role: "Super_Administrador" },
+    });
 
     const { result } = renderHook(() => useQuickNotesModalController());
 

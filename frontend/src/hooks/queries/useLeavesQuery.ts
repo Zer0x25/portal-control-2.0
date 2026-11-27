@@ -7,7 +7,7 @@ export const useLeavesQuery = (enabled = true) => {
   const { currentUser } = useAuth();
   const canReadLeaves =
     !!currentUser &&
-    ["Administrador", "Supervisor Elevado", "Supervisor", "Reloj Control"].includes(
+    ["Super_Administrador", "Administrador", "Supervisor", "Reloj Control"].includes(
       currentUser.role,
     );
 

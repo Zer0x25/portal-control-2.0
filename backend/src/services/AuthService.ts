@@ -56,9 +56,9 @@ export class AuthService {
 
     // Fallback values
     switch (role) {
-      case "Administrador":
+      case "Super_Administrador":
         return 10;
-      case "Supervisor_Elevado":
+      case "Administrador":
       case "Supervisor Elevado":
         return 4;
       case "Supervisor":
@@ -91,7 +91,7 @@ export class AuthService {
   }
 
   static sessionLimitForRole(role: string): number {
-    if (role === "Administrador") return 10;
+    if (role === "Super_Administrador") return 10;
     if (role === "Reloj_Control") return 2;
     return 1;
   }

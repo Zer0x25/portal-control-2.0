@@ -15,12 +15,12 @@ describe("getDefaultRouteForRole", () => {
     expect(getDefaultRouteForRole("Fiscalizador")).toBe(ROUTES.TIME_CONTROL);
   });
 
-  it("redirects Administrador to dashboard when control interno is enabled", () => {
-    expect(getDefaultRouteForRole("Administrador", true)).toBe(ROUTES.DASHBOARD);
+  it("redirects Super_Administrador to dashboard when control interno is enabled", () => {
+    expect(getDefaultRouteForRole("Super_Administrador", true)).toBe(ROUTES.DASHBOARD);
   });
 
-  it("redirects Administrador to supervisor dashboard when control interno is disabled", () => {
-    expect(getDefaultRouteForRole("Administrador", false)).toBe(ROUTES.SUPERVISOR_DASHBOARD);
+  it("redirects Super_Administrador to supervisor dashboard when control interno is disabled", () => {
+    expect(getDefaultRouteForRole("Super_Administrador", false)).toBe(ROUTES.SUPERVISOR_DASHBOARD);
   });
 
   it("redirects Reloj_Control appropriately", () => {

@@ -58,7 +58,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetIntegrationDb();
   const actor = await prismaDirect.user.create({
-    data: { username: "kpi-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "kpi-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (
