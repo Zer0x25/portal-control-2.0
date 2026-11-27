@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import KpiFilterPanel from "../../../features/supervisor-dashboard/components/KpiFilterPanel";
 import ReportFilterPanel from "../../../features/supervisor-dashboard/components/ReportFilterPanel";
 
-const businessNow = new Date(2026, 10, 25);
+// Instante anclado en UTC a mediodia de Chile (09:00 America/Santiago) del
+// 2026-11-25: getChileDateISO formatea en zona Chile, y new Date(y, m, d) usa
+// la zona local del runner (UTC en CI), donde la medianoche local cae el dia
+// anterior en Chile.
+const businessNow = new Date("2026-11-25T12:00:00Z");
 
 vi.mock("../../../hooks/useBusinessNow", () => ({
   useBusinessNow: () => businessNow,
