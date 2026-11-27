@@ -1564,7 +1564,7 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SeedStatus'
+ *               $ref: '#/components/schemas/SeedPhase2Status'
  */
 
 /**

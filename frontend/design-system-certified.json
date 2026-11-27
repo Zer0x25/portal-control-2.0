@@ -64,7 +64,7 @@
     "src/components/ui/UserManualModal.tsx",
     "src/components/ui/WeatherDisplay.tsx",
     "src/features/configuration/components/SeedingOptionsModal.view.tsx",
-    "src/features/configuration/components/SeedingProgressModal.tsx",
+    "src/features/configuration/components/SeedingProgressModal.container.tsx",
     "src/features/configuration/components/SmtpConfigModal.view.tsx",
     "src/features/employee-management/components/ImportModal.tsx",
     "src/features/employee-management/components/ShiftHistoryModal.tsx",

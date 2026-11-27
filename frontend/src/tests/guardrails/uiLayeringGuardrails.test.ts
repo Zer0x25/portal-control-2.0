@@ -99,7 +99,10 @@ describe("Guardrail de la capa UI (spec 031 AC8)", () => {
         "src/features/supervisor-dashboard/components/RejectionReasonModal.container.tsx",
       "SeedingOptionsModal.container.tsx":
         "src/features/configuration/components/SeedingOptionsModal.container.tsx",
-      "SeedingProgressModal.tsx": "src/features/configuration/components/SeedingProgressModal.tsx",
+      "SeedingProgressModal.container.tsx":
+        "src/features/configuration/components/SeedingProgressModal.container.tsx",
+      "SeedingProgressModal.view.tsx":
+        "src/features/configuration/components/SeedingProgressModal.view.tsx",
       "ShiftHandoverModal.tsx": "src/features/time-control/components/ShiftHandoverModal.tsx",
       "ShiftHistoryModal.tsx": "src/features/employee-management/components/ShiftHistoryModal.tsx",
       "ShiftReportModal.tsx": "src/features/logbook/components/ShiftReportModal.tsx",

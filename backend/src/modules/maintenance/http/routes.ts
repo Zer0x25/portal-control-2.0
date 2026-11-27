@@ -34,13 +34,12 @@ export const maintenancePlugin: FastifyPluginAsync<{
       ),
     ),
   );
-  for (const path of ["seed", "seed/phase1"])
-    app.post<{ Body: SeedOptions }>(
-      `/api/maintenance/${path}`,
-      body(SeedOptionsSchema),
-      (req, reply) =>
-        sendProgressStream(reply, (out) => options.service.seed(req.body, req.user || {}, out)),
-    );
+  app.post<{ Body: SeedOptions }>(
+    "/api/maintenance/seed/phase1",
+    body(SeedOptionsSchema),
+    (req, reply) =>
+      sendProgressStream(reply, (out) => options.service.seed(req.body, req.user || {}, out)),
+  );
   app.post<{ Body: Phase2Options }>(
     "/api/maintenance/seed/phase2/start",
     body(SeedPhase2StartSchema),

@@ -124,6 +124,7 @@ export const useSeedingOptionsController = ({
   /** Aplica el preset "Quick Seed". */
   const applyQuickSeedPreset = () => {
     reset(QUICK_SEED_PRESET);
+    setIncrementalLevel(0);
     addToast("Preset Quick Seed aplicado.", "success");
   };
 
@@ -140,9 +141,13 @@ export const useSeedingOptionsController = ({
     );
   };
 
-  /** Escribe un campo numerico (el texto vacio es 0, como antes). */
+  /**
+   * Escribe un campo numerico a mano. Cualquier edicion manual invalida el
+   * nivel del preset incremental (el estado dejo de ser "preset puro").
+   */
   const handleNumberChange = (field: SeedingNumberField, value: string) => {
     setValue(field, value === "" ? 0 : Number.parseInt(value, 10));
+    if (incrementalLevel !== 0) setIncrementalLevel(0);
   };
 
   return {

@@ -752,7 +752,7 @@ it.each([
 
 it.each([
   "/api/admin/reset-password",
-  "/api/maintenance/seed",
+  "/api/maintenance/seed/phase1",
   "/api/leaves",
   "/api/corrections",
   "/api/kpis/summary",

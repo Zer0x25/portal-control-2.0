@@ -35,7 +35,6 @@ const routes = [
   ["POST", "/api/admin/restore"],
   ["POST", "/api/admin/restart"],
   ["DELETE", "/api/maintenance/clear-database"],
-  ["POST", "/api/maintenance/seed"],
   ["POST", "/api/maintenance/seed/phase1"],
   ["POST", "/api/maintenance/seed/phase2/start"],
   ["POST", "/api/maintenance/seed/phase2/pause"],
@@ -536,40 +535,38 @@ describe("Spec023 operations on Fastify", () => {
     expect(cleaner).toHaveBeenCalledOnce();
     expect(systemOperationService.getSnapshot()?.actorUsername).toBe("owner");
   });
-  it.each(["seed", "seed/phase1"])(
-    "%s shares defaults, seed ALS and stopped-job persistence",
-    async (path) => {
-      gzip = true;
-      vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(
-        async (options, progress, heartbeat) => {
-          expect(requestContext.getStore()).toMatchObject({
-            username: "SYSTEM_SEEDER",
-            skipTrigger: true,
-          });
-          await new Promise((resolve) => setTimeout(resolve, 5));
-          expect(requestContext.getStore()?.username).toBe("SYSTEM_SEEDER");
-          expect(options).toMatchObject({
-            employees: 0,
-            days: 0,
-            basePatternsCount: 3,
-            quickNotesCount: 5,
-          });
-          heartbeat();
-          progress("owned progress");
-        },
-      );
-      const response = await http("POST", `/api/maintenance/${path}`, {}, token, true);
-      expect(response.status).toBe(200);
-      expect(response.headers["content-encoding"]).toBeUndefined();
-      expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
-      const job = await prismaDirect.seedingJob.findFirst();
-      expect(job).toMatchObject({
-        createdBy: "operations-admin",
-        status: "stopped",
-        config: { days: 1, leaveRatio: 5, correctionRequestRatio: 2, batchSize: 250 },
-      });
-    },
-  );
+  it("seed/phase1 shares defaults, seed ALS and stopped-job persistence", async () => {
+    gzip = true;
+    const path = "seed/phase1";
+    vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(
+      async (options, progress, heartbeat) => {
+        expect(requestContext.getStore()).toMatchObject({
+          username: "SYSTEM_SEEDER",
+          skipTrigger: true,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        expect(requestContext.getStore()?.username).toBe("SYSTEM_SEEDER");
+        expect(options).toMatchObject({
+          employees: 0,
+          days: 0,
+          basePatternsCount: 3,
+          quickNotesCount: 5,
+        });
+        heartbeat();
+        progress("owned progress");
+      },
+    );
+    const response = await http("POST", `/api/maintenance/${path}`, {}, token, true);
+    expect(response.status).toBe(200);
+    expect(response.headers["content-encoding"]).toBeUndefined();
+    expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
+    const job = await prismaDirect.seedingJob.findFirst();
+    expect(job).toMatchObject({
+      createdBy: "operations-admin",
+      status: "stopped",
+      config: { days: 1, leaveRatio: 5, correctionRequestRatio: 2, batchSize: 250 },
+    });
+  });
   it("seed owns maintenance and blocks reset, backup and phase2 until completion", async () => {
     vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(async () => {
       expect(systemOperationService.getSnapshot()?.type).toBe("seed");
@@ -608,7 +605,7 @@ describe("Spec023 operations on Fastify", () => {
     const engine = vi
       .spyOn(seedingEngine, "runSeedPhase1")
       .mockRejectedValueOnce(new Error("owned seed failure"));
-    const failed = await http("POST", "/api/maintenance/seed", {}, token, true);
+    const failed = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
     expect(failed.status).toBe(200);
     expect(lines(failed.bytes).at(-1)).toEqual({
       error: "Error crítico en fase 1; no se confirmó la finalización.",
@@ -617,9 +614,11 @@ describe("Spec023 operations on Fastify", () => {
     vi.spyOn(seedingJobService, "createStoppedJob").mockRejectedValueOnce(
       new Error("owned job failure"),
     );
-    const success = await http("POST", "/api/maintenance/seed", {}, token, true);
+    const success = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
     expect(lines(success.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
-    expect((await http("POST", "/api/maintenance/seed", { employees: -1 })).status).toBe(400);
+    expect((await http("POST", "/api/maintenance/seed/phase1", { employees: -1 })).status).toBe(
+      400,
+    );
   });
   it("persists phase2 lifecycle and logs while suppressing background worker", async () => {
     expect((await http("GET", "/api/maintenance/seed/phase2/status")).body.job).toBeNull();

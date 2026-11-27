@@ -1101,19 +1101,13 @@
       "SeedOptions": {
         "type": "object",
         "properties": {
-          "clearExisting": { "type": "boolean" },
-          "adminPassword": { "type": "string" },
           "employees": { "type": "integer", "minimum": 0 },
           "days": { "type": "integer", "minimum": 0 },
           "basePatternsCount": { "type": "integer", "minimum": 1 },
           "leaveRatio": { "type": "number", "minimum": 0, "maximum": 100 },
           "correctionRequestRatio": { "type": "number", "minimum": 0, "maximum": 100 },
           "shiftReportsPerDay": { "type": "number", "minimum": 0, "maximum": 6 },
-          "quickNotesCount": { "type": "integer", "minimum": 0 },
-          "seedEmployees": { "type": "boolean" },
-          "seedShifts": { "type": "boolean" },
-          "seedRecords": { "type": "boolean" },
-          "monthsToSeed": { "type": "integer", "minimum": 1, "maximum": 12 }
+          "quickNotesCount": { "type": "integer", "minimum": 0 }
         }
       },
       "SeedPhase2Job": {
@@ -1130,21 +1124,53 @@
           "batchSize": { "type": "integer", "minimum": 50, "maximum": 2000 }
         }
       },
-      "SeedStatus": {
+      "SeedPhase2Status": {
         "type": "object",
         "properties": {
-          "status": {
-            "type": "string",
-            "enum": ["idle", "running", "paused", "completed", "error"]
-          },
-          "progress": { "type": "number" },
-          "processed": { "type": "number" },
-          "total": { "type": "number" },
-          "currentPhase": { "type": "string" },
-          "startTime": { "type": "string" },
-          "error": { "type": "string" }
+          "success": { "type": "boolean" },
+          "job": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["pending", "running", "paused", "completed", "failed", "stopped"]
+              },
+              "config": {
+                "type": "object",
+                "properties": {
+                  "days": { "type": "number" },
+                  "leaveRatio": { "type": "number" },
+                  "correctionRequestRatio": { "type": "number" },
+                  "batchSize": { "type": "number" }
+                },
+                "required": ["days", "leaveRatio", "correctionRequestRatio", "batchSize"]
+              },
+              "progress": {
+                "type": "object",
+                "properties": {
+                  "currentDay": { "type": "number" },
+                  "totalDays": { "type": "number" },
+                  "processedRecords": { "type": "number" },
+                  "sealedRecords": { "type": "number" },
+                  "errors": { "type": "number" }
+                },
+                "required": [
+                  "currentDay",
+                  "totalDays",
+                  "processedRecords",
+                  "sealedRecords",
+                  "errors"
+                ]
+              },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "errorSummary": { "type": "string", "nullable": true }
+            },
+            "required": ["id", "status", "config", "progress"]
+          }
         },
-        "required": ["status", "progress", "processed", "total"]
+        "required": ["success", "job"]
       },
       "ServerTime": {
         "type": "object",
@@ -2888,7 +2914,7 @@
           "200": {
             "description": "Estado actual",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/SeedStatus" } }
+              "application/json": { "schema": { "$ref": "#/components/schemas/SeedPhase2Status" } }
             }
           }
         }

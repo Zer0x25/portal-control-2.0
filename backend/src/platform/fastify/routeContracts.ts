@@ -212,7 +212,6 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
       "maintenance",
       [
         "DELETE /api/maintenance/clear-database",
-        "POST /api/maintenance/seed",
         "POST /api/maintenance/seed/phase1",
         "POST /api/maintenance/seed/phase2/start",
         "POST /api/maintenance/seed/phase2/pause",

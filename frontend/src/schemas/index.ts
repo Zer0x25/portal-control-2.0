@@ -28,11 +28,7 @@ import {
   singleMeterReadingBaseSchema,
 } from "./forms/meter";
 import { quickNoteFormSchema } from "./forms/note";
-import {
-  seedOptionsFormSchema,
-  seedPhase2FormSchema,
-  seedingOptionsFormSchema,
-} from "./forms/seed";
+import { seedPhase2FormSchema, seedingOptionsFormSchema } from "./forms/seed";
 import { shiftAssignmentFormSchema, shiftPatternFormSchema } from "./forms/shift";
 import {
   buildSmtpProfileFormSchema,
@@ -374,14 +370,6 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     ],
   },
   {
-    id: "seedOptionsForm",
-    openApi: "SeedOptions",
-    schema: seedOptionsFormSchema,
-    // Copia del contrato del backend: la pantalla usa el subconjunto
-    // `seedingOptionsForm` (los siete numeros que muestra).
-    forms: [],
-  },
-  {
     id: "seedingOptionsForm",
     openApi: "SeedOptions",
     schema: seedingOptionsFormSchema,
@@ -406,7 +394,7 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "seedPhase2Form",
     openApi: "SeedPhase2Start",
     schema: seedPhase2FormSchema,
-    forms: ["SeedingProgressModal"],
+    forms: ["SeedingProgressModal.container"],
   },
   {
     id: "timeRecordWriteForm",
@@ -616,7 +604,7 @@ export type SendTestEmailPayloadContract = AssertAssignable<
 
 /** Payload de las opciones de siembra: debe encajar en `SeedOptions`. */
 export type SeedOptionsPayloadContract = AssertAssignable<
-  z.output<typeof seedOptionsFormSchema>,
+  z.output<typeof seedingOptionsFormSchema>,
   components["schemas"]["SeedOptions"]
 >;
 

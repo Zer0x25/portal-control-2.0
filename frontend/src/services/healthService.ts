@@ -210,12 +210,46 @@ export const healthService = {
     });
   },
 
-  /** Elimina los datos del servidor (reset maestro). */
+  /**
+   * Elimina los datos del servidor (reset maestro).
+   *
+   * El backend responde un **stream NDJSON de progreso** (`sendProgressStream`),
+   * no un JSON unico: el flujo debe consumirse linea a linea. Un `response.json()`
+   * aqui fallaria con "Unexpected non-whitespace character after JSON" al leer
+   * la segunda linea, y el reset quedaria sin confirmar (sin recarga posterior).
+   */
   async clearDatabase(): Promise<void> {
-    await apiRequest<void>({
+    const response = await apiRequest<Response>({
       method: "DELETE",
       url: "/api/maintenance/clear-database",
+      responseType: "stream",
     });
+
+    const reader = response.body?.getReader();
+    if (!reader) return;
+
+    const decoder = new TextDecoder();
+    let pending = "";
+    let failure: string | null = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      pending += decoder.decode(value, { stream: true });
+      const lines = pending.split("\n");
+      pending = lines.pop() || "";
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const data = JSON.parse(line) as { error?: string };
+          if (data.error) failure = data.error;
+        } catch {
+          // ignore parse chunks
+        }
+      }
+    }
+
+    if (failure) throw new Error(failure);
   },
 
   /** Dispara el cierre contable automatico. */

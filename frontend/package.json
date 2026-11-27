@@ -2,7 +2,7 @@
   "name": "new-portal-control-ver-3-0",
   "description": "BMW buscando el Ferrari (Estatus employee)",
   "private": true,
-  "version": "8.10.0",
+  "version": "8.44.0",
   "type": "module",
   "engines": {
     "node": ">=26.13.0 <27"
