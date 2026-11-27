@@ -2921,6 +2921,10 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                 ],
                 "type": "object",
               },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string",
+              },
               "errorSummary": {
                 "nullable": true,
                 "type": "string",
