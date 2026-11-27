@@ -40,7 +40,7 @@ describe("Catálogo del design system (spec 038)", () => {
     expect(screen.getAllByRole("link", { name: "Ver historia" }).length).toBeGreaterThan(0);
   });
 
-  it("la ruta /design-system existe y esta restringida a Administrador", () => {
+  it("la ruta /design-system existe y esta restringida a Super_Administrador", () => {
     const constants = readFileSync(path.join(frontendRoot, "src/constants.ts"), "utf8");
     expect(constants).toContain('DESIGN_SYSTEM: "/design-system"');
 
@@ -49,13 +49,13 @@ describe("Catálogo del design system (spec 038)", () => {
     expect(app).toMatch(/ROUTES\.DESIGN_SYSTEM[\s\S]{0,400}requiredRoles=\{\[ROLES\.ADMIN\]\}/);
   });
 
-  it("el Sidebar ofrece el catalogo solo a Administrador", () => {
+  it("el Sidebar ofrece el catalogo solo a Super_Administrador", () => {
     const sidebarMenu = readFileSync(
       path.join(frontendRoot, "src/hooks/layout/sidebarMenu.ts"),
       "utf8",
     );
     expect(sidebarMenu).toContain("ROUTES.DESIGN_SYSTEM");
-    expect(sidebarMenu).toMatch(/role === "Administrador"[\s\S]{0,200}ROUTES\.DESIGN_SYSTEM/);
+    expect(sidebarMenu).toMatch(/role === "Super_Administrador"[\s\S]{0,200}ROUTES\.DESIGN_SYSTEM/);
   });
 
   it("el showcase modal queda reemplazado por la ruta", () => {

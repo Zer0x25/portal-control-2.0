@@ -54,7 +54,7 @@ describe("LogbookView", () => {
     setShowSupplierEntryModal: vi.fn(),
     setShowFabMenu: vi.fn(),
     setShowCloseShiftConfirmation: vi.fn(),
-    getResponsibleDisplayName: vi.fn(() => "Administrador"),
+    getResponsibleDisplayName: vi.fn(() => "Super_Administrador"),
     executeCloseShift: vi.fn(),
     handleStartShift: vi.fn(),
     handleUpdateShift: vi.fn(),

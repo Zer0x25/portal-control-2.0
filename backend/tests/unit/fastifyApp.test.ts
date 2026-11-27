@@ -370,7 +370,7 @@ describe("Fastify foundation with real JWT/session rules", () => {
         method,
         url,
         payload,
-        headers: { authorization: `Bearer ${f.token("reader", "Usuario", "Administrador")}` },
+        headers: { authorization: `Bearer ${f.token("reader", "Usuario", "Super_Administrador")}` },
       });
       expect(response.statusCode).toBe(403);
       expect(f.repository.create).not.toHaveBeenCalled();
@@ -718,7 +718,7 @@ it.each([
   "$bulk enforces 1/10 MiB limits before invoking application",
   async ({ single, bulk, key, method, status, body }) => {
     const f = fixture();
-    const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
+    const headers = { authorization: `Bearer ${f.token("admin", "Super_Administrador")}` };
     const effect =
       key === "records"
         ? f.deps.records.bulk
@@ -770,7 +770,7 @@ it.each([
   const response = await f.app.inject({
     method: "POST",
     url,
-    headers: { authorization: `Bearer ${f.token("admin", "Administrador")}` },
+    headers: { authorization: `Bearer ${f.token("admin", "Super_Administrador")}` },
     payload: { extra: "x".repeat(1024 * 1024) },
   });
   expect(response.statusCode).toBe(413);
@@ -787,7 +787,7 @@ it.each([
 
 it("shift reports accept pedestrian entries without plates and require plates for vehicles", async () => {
   const f = fixture();
-  const headers = { authorization: `Bearer ${f.token("supervisor", "Supervisor_Elevado")}` };
+  const headers = { authorization: `Bearer ${f.token("supervisor", "Administrador")}` };
   const report = (arrivalMode: "pedestrian" | "vehicle", licensePlate: string) => ({
     id: "isolated-shift",
     date: "2026-10-10",
@@ -868,7 +868,7 @@ it("shift reports accept pedestrian entries without plates and require plates fo
 
 it("shift reports reject oversized bodies and terminate unexpected pre-stream failure", async () => {
   const f = fixture();
-  const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
+  const headers = { authorization: `Bearer ${f.token("admin", "Super_Administrador")}` };
   expect(
     (
       await f.app.inject({
@@ -922,7 +922,7 @@ it("export IP budget is independent, shared across routes and checked before mai
 it("admin and maintenance bypass the global limiter and maintenance gate but require auth", async () => {
   const f = fixture({ rateLimit: { max: 1, timeWindow: 900000 } });
   vi.mocked(f.deps.maintenance).mockReturnValue({ type: "restore" });
-  const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
+  const headers = { authorization: `Bearer ${f.token("admin", "Super_Administrador")}` };
   for (let i = 0; i < 3; i++) {
     expect((await f.app.inject({ url: "/api/admin/stats", headers })).statusCode).toBe(200);
     expect(
@@ -960,7 +960,7 @@ it("admin applies shared 1000/IP/15-minute budget before auth and leaves mainten
 
 it("accepts an explicitly JSON but empty DELETE body like Express without weakening required bodies", async () => {
   const { app, token } = fixture();
-  const authorization = "Bearer " + token("admin", "Administrador");
+  const authorization = "Bearer " + token("admin", "Super_Administrador");
   const removed = await app.inject({
     method: "DELETE",
     url: "/api/users/a-user",
@@ -981,7 +981,7 @@ it("keeps prototype poisoning rejection in the shared JSON parser", async () => 
     method: "POST",
     url: "/api/users",
     headers: {
-      authorization: "Bearer " + token("admin", "Administrador"),
+      authorization: "Bearer " + token("admin", "Super_Administrador"),
       "content-type": "application/json",
     },
     payload: '{"__proto__":{"isAdmin":true}}',
@@ -1006,7 +1006,7 @@ it("drains authentication already admitted when close starts and rejects later r
     await new Promise<void>((resolve) => {
       release = resolve;
     });
-    return { id: "owner", username: "owner", role: "Administrador" };
+    return { id: "owner", username: "owner", role: "Super_Administrador" };
   };
   const request = app.inject({
     url: "/api/holidays",
@@ -1036,7 +1036,7 @@ describe("Anti-regression: PUT /api/users/:id permission rules", () => {
     });
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({
-      message: "Acceso denegado: Se requieren permisos de Administrador",
+      message: "Acceso denegado: Se requieren permisos de Super_Administrador",
     });
   });
 
@@ -1047,7 +1047,7 @@ describe("Anti-regression: PUT /api/users/:id permission rules", () => {
       method: "PUT",
       url: "/api/users/regular",
       headers: { authorization, "content-type": "application/json" },
-      payload: { role: "Administrador" },
+      payload: { role: "Super_Administrador" },
     });
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({
@@ -1088,7 +1088,7 @@ describe("Anti-regression: PUT /api/users/:id permission rules", () => {
       username: "regular",
       role: "Supervisor",
     });
-    const authorization = "Bearer " + token("admin", "Administrador");
+    const authorization = "Bearer " + token("admin", "Super_Administrador");
     const response = await app.inject({
       method: "PUT",
       url: "/api/users/regular",

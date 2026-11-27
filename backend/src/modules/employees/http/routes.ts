@@ -33,7 +33,7 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
   const supervisor: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+      !["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
         request.user.role,
       )
     )
@@ -77,7 +77,7 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
       const role = request.user?.role;
       const isSupervisorOrAbove =
         role !== undefined &&
-        ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(role);
+        ["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(role);
       const isKioskSelf =
         role === "Kiosk_Employee" &&
         (request.user?.employeeId

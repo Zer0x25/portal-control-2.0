@@ -25,9 +25,9 @@ const manual = {
   ipAddress: "spoof",
   metadata: { secret: "ignored" },
 };
-async function session(username: string, role = "Administrador") {
+async function session(username: string, role = "Super_Administrador") {
   const actor = await prismaDirect.user.create({
-    data: { username, role: role as "Administrador", passwordHash: "test-only" },
+    data: { username, role: role as "Super_Administrador", passwordHash: "test-only" },
   });
   return (
     await AuthService.createSession(actor.id, actor.username, actor.role, undefined, "spec022")
@@ -82,7 +82,7 @@ beforeEach(async () => {
   await resetIntegrationDb();
   ip = "192.0.2." + ++sequence;
   const actor = await prismaDirect.user.create({
-    data: { username: "audit-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "audit-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (
@@ -210,10 +210,10 @@ describe("Spec022 audit on Fastify", () => {
       expect((await http("POST", "/api/audit-logs", manual)).status).toBe(403);
     },
   );
-  it("allows manual POST for Supervisor_Elevado", async () => {
+  it("allows manual POST for Administrador", async () => {
     await prismaDirect.user.update({
       where: { id: actorId },
-      data: { role: "Supervisor_Elevado" },
+      data: { role: "Administrador" },
     });
     expect((await http("POST", "/api/audit-logs", manual)).status).toBe(201);
   });
@@ -252,7 +252,7 @@ describe("Spec022 audit on Fastify", () => {
     expect(await prismaDirect.auditLog.count({ where: { id: "audit-a" } })).toBe(1);
     await prismaDirect.user.update({
       where: { id: actorId },
-      data: { role: "Supervisor_Elevado" },
+      data: { role: "Administrador" },
     });
     const response = await http("POST", "/api/audit-logs/cleanup", { months: "1" });
     expect(response.status).toBe(200);
@@ -415,7 +415,7 @@ describe("Spec022 audit on Fastify", () => {
     ).toBe(1);
   });
   it("isolates concurrent actors across awaits and direct transactions", async () => {
-    const second = await session("audit-elevated", "Supervisor_Elevado");
+    const second = await session("audit-elevated", "Administrador");
     const seen: Array<{ username: string | undefined; sql: string }> = [];
     vi.spyOn(securityAuditService, "verifyFullChainIntegrity").mockImplementation(async () => {
       const username = requestContext.getStore()?.username;

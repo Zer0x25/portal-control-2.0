@@ -15,7 +15,7 @@ export const metersPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (req) => {
     if (
       !req.user ||
-      !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(req.user.role)
+      !["Super_Administrador", "Administrador", "Reloj_Control"].includes(req.user.role)
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };

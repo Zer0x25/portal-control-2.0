@@ -25,8 +25,8 @@ export const configsPlugin: FastifyPluginAsync<{
   await app.register(multipart, { limits: { fileSize: 15 * 1024 * 1024 } });
   await app.register(fastifyStatic, { serve: false });
   const admin: onRequestHookHandler = async (req) => {
-    if (req.user?.role !== "Administrador")
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    if (req.user?.role !== "Super_Administrador")
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
   };
   const auth = { config: { requiresAuth: true }, onRequest: [options.authenticate] };
   const elevated = { config: { requiresAuth: true }, onRequest: [options.authenticate, admin] };

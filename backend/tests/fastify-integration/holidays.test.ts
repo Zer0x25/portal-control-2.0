@@ -130,7 +130,7 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
     expect(events).toHaveBeenCalledTimes(2);
   });
   it("denies writes for Usuario, Reloj_Control, and Fiscalizador while allowing GET for Reloj_Control and Fiscalizador", async () => {
-    const reader = await session("reader", "Usuario", "Administrador");
+    const reader = await session("reader", "Usuario", "Super_Administrador");
     for (const [method, url, payload] of [
       ["POST", "/api/holidays", body],
       ["POST", "/api/holidays/bulk", [body]],

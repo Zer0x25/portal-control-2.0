@@ -82,7 +82,7 @@ vi.mock("../../../hooks/useUsers", () => ({
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
-    currentUser: { id: "u1", username: "admin", role: "Administrador" },
+    currentUser: { id: "u1", username: "admin", role: "Super_Administrador" },
   }),
 }));
 

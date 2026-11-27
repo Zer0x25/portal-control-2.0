@@ -20,7 +20,7 @@ export const useLoginAutomations = (options: { useClockingOptions?: boolean } = 
   );
   const canCheckHandover =
     !!currentUser &&
-    ["Reloj_Control", "Administrador", "Supervisor_Elevado"].includes(currentUser.role) &&
+    ["Reloj_Control", "Super_Administrador", "Administrador"].includes(currentUser.role) &&
     !hasViewedHandover;
   const { data: shiftReports = [], isLoading: isLoadingReports } = useReportsQuery(
     {},
@@ -32,7 +32,7 @@ export const useLoginAutomations = (options: { useClockingOptions?: boolean } = 
       (left, right) => new Date(right.endTime!).getTime() - new Date(left.endTime!).getTime(),
     )[0];
   const canReadUserDirectory =
-    !!currentUser && ["Administrador", "Supervisor_Elevado"].includes(currentUser.role);
+    !!currentUser && ["Super_Administrador", "Administrador"].includes(currentUser.role);
   const shouldLoadUsers =
     canCheckHandover && !isLoadingReports && !!lastClosedReport && canReadUserDirectory;
   const { users, isLoadingUsers } = useUsers({ enabled: shouldLoadUsers });

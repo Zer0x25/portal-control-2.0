@@ -139,7 +139,7 @@ describe("useChangePasswordModalController", () => {
   });
 
   it("bloquea la cuenta admin por defecto", async () => {
-    setup({ user: { id: "admin-001", username: "admin", role: "Administrador" } });
+    setup({ user: { id: "admin-001", username: "admin", role: "Super_Administrador" } });
 
     const { result } = renderHook(() =>
       useChangePasswordModalController({ isOpen: true, onClose: mocks.onCloseMock }),

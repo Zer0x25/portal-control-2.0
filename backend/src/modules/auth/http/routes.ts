@@ -36,8 +36,8 @@ const context = (request: FastifyRequest) => ({
 });
 export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, options) => {
   const adminOnly: onRequestHookHandler = async (request) => {
-    if (request.user?.role !== "Administrador") {
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    if (request.user?.role !== "Super_Administrador") {
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
     }
   };
   const throttle = async (request: FastifyRequest, reply: Parameters<onRequestHookHandler>[1]) => {

@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { mapBetterAuthSession } from "../../src/modules/auth/infrastructure/sessionAdapter";
 
 describe("mapBetterAuthSession", () => {
-  it("Administrador dura 10h y usa límite 10", () => {
+  it("Super_Administrador dura 10h y usa límite 10", () => {
     const r = mapBetterAuthSession(
-      { role: "Administrador" } as never,
+      { role: "Super_Administrador" } as never,
       new Date("2026-11-07T00:00:00Z"),
     );
     expect(r.hours).toBe(10);

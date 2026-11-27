@@ -40,7 +40,7 @@ beforeEach(async () => {
     ],
   });
   const user = await prismaDirect.user.create({
-    data: { username: "export-admin", role: "Administrador", passwordHash: "test" },
+    data: { username: "export-admin", role: "Super_Administrador", passwordHash: "test" },
   });
   token = (await AuthService.createSession(user.id, user.username, user.role, null, "export-test"))
     .token;

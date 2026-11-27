@@ -28,7 +28,7 @@ const {
   verifyIntegrityMock: vi.fn(),
   useAuditLogsInfiniteMock: vi.fn(),
   useHealthQueryMock: vi.fn(),
-  authState: { currentUser: { id: "u1", username: "admin", role: "Administrador" } },
+  authState: { currentUser: { id: "u1", username: "admin", role: "Super_Administrador" } },
 }));
 
 vi.mock("../../../hooks/useAuth", () => ({

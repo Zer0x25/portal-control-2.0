@@ -415,8 +415,8 @@ model MonthlyEmployeeStats {
 }
 
 enum UserRole {
+  Super_Administrador
   Administrador
-  Supervisor_Elevado
   Supervisor
   Reloj_Control
   Fiscalizador

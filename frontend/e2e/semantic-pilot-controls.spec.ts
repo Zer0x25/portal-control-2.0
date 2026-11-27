@@ -39,9 +39,9 @@ async function tabTo(page: Page, locator: Locator, maxTabs = 60) {
 async function setupRolePage(
   page: Page,
   request: APIRequestContext,
-  role: "Administrador" | "Supervisor" | "Supervisor_Elevado" | "Reloj_Control",
+  role: "Super_Administrador" | "Supervisor" | "Administrador" | "Reloj_Control",
 ) {
-  if (role === "Administrador") {
+  if (role === "Super_Administrador") {
     await loginFast(page, request, "admin");
     return async () => {};
   }
@@ -156,7 +156,7 @@ const MOCK_CLOSED_SHIFT = {
 
 const WIDTHS = [355, 853, 1138] as const;
 
-for (const role of ["Administrador", "Supervisor_Elevado", "Reloj_Control"] as const) {
+for (const role of ["Super_Administrador", "Administrador", "Reloj_Control"] as const) {
   test(`Dashboard controles internos por teclado y tamaño para ${role}`, async ({
     page,
     request,
@@ -245,7 +245,7 @@ for (const role of ["Administrador", "Supervisor_Elevado", "Reloj_Control"] as c
   });
 }
 
-for (const role of ["Administrador", "Supervisor", "Supervisor_Elevado"] as const) {
+for (const role of ["Super_Administrador", "Supervisor", "Administrador"] as const) {
   test(`Supervisión controles internos por teclado y tamaño para ${role}`, async ({
     page,
     request,
@@ -427,7 +427,7 @@ for (const role of ["Administrador", "Supervisor", "Supervisor_Elevado"] as cons
   });
 }
 
-for (const role of ["Administrador", "Supervisor_Elevado", "Reloj_Control"] as const) {
+for (const role of ["Super_Administrador", "Administrador", "Reloj_Control"] as const) {
   test(`Bitácora controles internos por teclado y tamaño para ${role}`, async ({
     page,
     request,

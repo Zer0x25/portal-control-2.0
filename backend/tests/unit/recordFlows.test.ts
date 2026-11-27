@@ -120,7 +120,7 @@ describe("Record application TDD", () => {
     ).rejects.toThrow("Espere unos segundos");
     f.service.punch.mockRejectedValueOnce(new Error("EMPLOYEE_INACTIVE"));
     await expect(
-      f.flows.punch({ employeeId: "e" }, { ...user, role: "Administrador" }),
+      f.flows.punch({ employeeId: "e" }, { ...user, role: "Super_Administrador" }),
     ).rejects.toThrow("archivado o inactivo");
     expect(f.service.punch).toHaveBeenCalledTimes(3);
   });

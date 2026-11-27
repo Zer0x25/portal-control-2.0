@@ -9,7 +9,7 @@ export const useReportsQuery = (
   const { currentUser } = useAuth();
   const canReadReports =
     !!currentUser &&
-    ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+    ["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
       currentUser.role,
     );
 

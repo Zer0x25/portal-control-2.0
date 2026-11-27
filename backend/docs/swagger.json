@@ -139,8 +139,8 @@
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador"
             ]
           },
@@ -206,8 +206,8 @@
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado"
             ]
@@ -237,8 +237,8 @@
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado"
             ]
@@ -3949,7 +3949,7 @@
     },
     "/api/auth/mfa/setup": {
       "post": {
-        "summary": "Genera secreto MFA y QR (Solo Administrador)",
+        "summary": "Genera secreto MFA y QR (Solo Super_Administrador)",
         "tags": ["Auth"],
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -3969,14 +3969,14 @@
               }
             }
           },
-          "403": { "description": "Requiere rol Administrador" },
+          "403": { "description": "Requiere rol Super_Administrador" },
           "409": { "description": "MFA ya habilitado" }
         }
       }
     },
     "/api/auth/mfa/verify": {
       "post": {
-        "summary": "Habilita MFA tras verificar primer código (Solo Administrador)",
+        "summary": "Habilita MFA tras verificar primer código (Solo Super_Administrador)",
         "tags": ["Auth"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -3999,7 +3999,7 @@
             }
           },
           "400": { "description": "MFA no configurado o código inválido" },
-          "403": { "description": "Requiere rol Administrador" },
+          "403": { "description": "Requiere rol Super_Administrador" },
           "409": { "description": "MFA ya habilitado" }
         }
       }

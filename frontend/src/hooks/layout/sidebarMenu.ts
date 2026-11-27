@@ -37,12 +37,12 @@ export const buildSidebarMenuByRole = ({
   isControlInternoEnabled,
 }: SidebarMenuParams): SidebarMenuItem[] => {
   const isElevatedRole =
-    role && ["Supervisor", "Administrador", "Supervisor_Elevado"].includes(role);
-  const isAdminOrElevated = role && (role === "Administrador" || role === "Supervisor_Elevado");
+    role && ["Supervisor", "Super_Administrador", "Administrador"].includes(role);
+  const isAdminOrElevated = role && (role === "Super_Administrador" || role === "Administrador");
   const isWorkerRole = role === "Usuario";
   const isAuditorRole = role === "Fiscalizador";
   const canManageEmployees =
-    role && ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(role);
+    role && ["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(role);
 
   if (isAuditorRole) {
     return [
@@ -80,7 +80,7 @@ export const buildSidebarMenuByRole = ({
   items.push({ to: ROUTES.TIME_CONTROL, icon: ClockIcon, label: "Control" });
 
   if (
-    ["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(role || "") &&
+    ["Super_Administrador", "Administrador", "Reloj_Control"].includes(role || "") &&
     isControlInternoEnabled
   ) {
     items.push({ to: ROUTES.LOGBOOK, icon: BookOpenIcon, label: "Libro" });
@@ -88,7 +88,7 @@ export const buildSidebarMenuByRole = ({
   }
 
   if (
-    ["Reloj_Control", "Administrador", "Supervisor_Elevado", "Supervisor"].includes(role || "") &&
+    ["Reloj_Control", "Super_Administrador", "Administrador", "Supervisor"].includes(role || "") &&
     isControlInternoEnabled
   ) {
     items.push({ to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" });
@@ -116,12 +116,12 @@ export const buildSidebarMenuByRole = ({
 
   if (isAdminOrElevated) {
     items.push({ to: ROUTES.PERSONNEL_MANAGEMENT, icon: UserPlusIcon, label: "Dotación" });
-    if (role === "Administrador" || role === "Supervisor_Elevado") {
+    if (role === "Super_Administrador" || role === "Administrador") {
       items.push({ to: ROUTES.GOVERNANCE_HUB, icon: ShieldIcon, label: "Gobernanza" });
     }
   }
 
-  if (role === "Administrador") {
+  if (role === "Super_Administrador") {
     items.push({ to: ROUTES.DESIGN_SYSTEM, icon: SparklesIcon, label: "Design System" });
   }
 

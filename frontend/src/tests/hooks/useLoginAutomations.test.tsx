@@ -64,7 +64,7 @@ import { useLoginAutomations } from "../../hooks/useLoginAutomations";
 describe("useLoginAutomations deferred scheduling gate", () => {
   beforeEach(() => {
     sessionStorage.clear();
-    mocks.currentUser = { username: "admin", role: "Administrador" };
+    mocks.currentUser = { username: "admin", role: "Super_Administrador" };
     mocks.employee = null;
     mocks.getEmployeeById.mockImplementation(() => mocks.employee);
     mocks.users = [];
@@ -98,7 +98,7 @@ describe("useLoginAutomations deferred scheduling gate", () => {
   it("marks an eligible employee without importing scheduling hooks into the layout", () => {
     mocks.currentUser = {
       username: "ana",
-      role: "Administrador",
+      role: "Super_Administrador",
       employeeId: "EMP-1",
     };
     mocks.employee = { id: "EMP-1", position: "Reloj_Control" };
@@ -112,7 +112,7 @@ describe("useLoginAutomations deferred scheduling gate", () => {
   it("uses the clocking projection for auto-start on the Time Control route", () => {
     mocks.currentUser = {
       username: "ana",
-      role: "Administrador",
+      role: "Super_Administrador",
       employeeId: "EMP-1",
     };
     mocks.clockingEmployeeOptions = [{ id: "EMP-1", name: "Ana", position: "Reloj_Control" }];

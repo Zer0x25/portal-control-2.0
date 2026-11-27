@@ -21,7 +21,7 @@ vi.mock("../../../hooks/queries/useConfigQuery", () => ({
 describe("useQuickActionModalController", () => {
   it("arms after timeout and enables start break when in jornada", () => {
     vi.useFakeTimers();
-    useAuthMock.mockReturnValue({ currentUser: { role: "Administrador" } });
+    useAuthMock.mockReturnValue({ currentUser: { role: "Super_Administrador" } });
     useAccountingLockDateQueryMock.mockReturnValue({ data: null });
     useControlInternoEnabledQueryMock.mockReturnValue({ data: true });
 
@@ -52,7 +52,7 @@ describe("useQuickActionModalController", () => {
   });
 
   it("locks record and prioritizes accounting lock tooltip", () => {
-    useAuthMock.mockReturnValue({ currentUser: { role: "Supervisor_Elevado" } });
+    useAuthMock.mockReturnValue({ currentUser: { role: "Administrador" } });
     useAccountingLockDateQueryMock.mockReturnValue({ data: "2026-03-10" });
     useControlInternoEnabledQueryMock.mockReturnValue({ data: true });
 

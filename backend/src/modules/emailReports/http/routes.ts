@@ -19,9 +19,9 @@ export const emailReportsPlugin: FastifyPluginAsync<{
   authenticate: onRequestHookHandler;
 }> = async (app, options) => {
   const elevated: onRequestHookHandler = async (req) => {
-    if (!req.user || !["Administrador", "Supervisor_Elevado"].includes(req.user.role))
+    if (!req.user || !["Super_Administrador", "Administrador"].includes(req.user.role))
       throw new ForbiddenError(
-        "Acceso denegado: Se requieren permisos de nivel superior (Administrador o Supervisor Elevado)",
+        "Acceso denegado: Se requieren permisos de nivel superior (Super_Administrador o Supervisor Elevado)",
       );
   };
   const base = { config: { requiresAuth: true }, onRequest: [options.authenticate, elevated] };

@@ -29,7 +29,7 @@ describe("Attendance Integration Flow", () => {
         id: testUserId,
         username: "test_tester",
         passwordHash: "dummy",
-        role: "Administrador",
+        role: "Super_Administrador",
       },
     });
   });
@@ -43,7 +43,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should complete a full punch-in flow", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     // Spy on SocketService.emit
@@ -72,7 +72,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should complete a full punch-out flow after punching in", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     const result = await PunchService.handlePunch(mockReq, testEmployeeId, "TEST_SUITE", "salida");
@@ -90,7 +90,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should reject exit when break is incomplete and elapsed is <= 60 minutes", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     await prisma.timeRecord.deleteMany({ where: { employeeId: testEmployeeId } });
@@ -118,7 +118,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should allow exit with incomplete break after >60 minutes and complete when schedule snapshot exists", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     await prisma.timeRecord.deleteMany({ where: { employeeId: testEmployeeId } });
@@ -154,7 +154,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should allow exit with incomplete break after >60 minutes and mark AnomaliaManual when no schedule exists", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     await prisma.timeRecord.deleteMany({ where: { employeeId: testEmployeeId } });
@@ -186,7 +186,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should detect manipulated record in integrity verify run", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     await prisma.timeRecord.deleteMany({ where: { employeeId: testEmployeeId } });
@@ -211,7 +211,7 @@ describe("Attendance Integration Flow", () => {
 
   it("should keep integrity valid right after punch creation", async () => {
     const mockReq = {
-      user: { id: testUserId, username: "test_tester", role: "Administrador" },
+      user: { id: testUserId, username: "test_tester", role: "Super_Administrador" },
     } as any;
 
     await prisma.timeRecord.deleteMany({ where: { employeeId: testEmployeeId } });

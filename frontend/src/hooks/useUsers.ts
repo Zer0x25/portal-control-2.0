@@ -146,7 +146,7 @@ export const useUsers = (options: { readonly enabled?: boolean } = {}) => {
         await userService.update(currentUser.id, {
           password: data.newPassword,
         });
-        if (["Administrador", "Supervisor_Elevado"].includes(currentUser.role)) {
+        if (["Super_Administrador", "Administrador"].includes(currentUser.role)) {
           await refreshUsers();
         }
         return true;

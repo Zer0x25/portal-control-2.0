@@ -32,7 +32,7 @@ function fixture() {
     deps,
     user,
     authenticate: createAuthenticate(deps),
-    token: jwt.sign({ ...user, role: "Administrador" }, secret, { expiresIn: "1h" }),
+    token: jwt.sign({ ...user, role: "Super_Administrador" }, secret, { expiresIn: "1h" }),
   };
 }
 describe("Shared authentication with real JWT verification", () => {

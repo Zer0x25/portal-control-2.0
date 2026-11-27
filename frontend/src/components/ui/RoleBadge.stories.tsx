@@ -5,13 +5,13 @@ const meta = {
   id: "certified-components-ui-role-badge",
   title: "Design System/components/ui/Role/Badge",
   component: RoleBadge,
-  args: { role: "Administrador", size: "md" },
+  args: { role: "Super_Administrador", size: "md" },
   argTypes: {
     role: {
       control: "select",
       options: [
+        "Super_Administrador",
         "Administrador",
-        "Supervisor_Elevado",
         "Supervisor",
         "Reloj_Control",
         "Fiscalizador",

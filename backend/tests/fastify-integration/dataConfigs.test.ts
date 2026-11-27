@@ -70,7 +70,7 @@ beforeEach(async () => {
   await resetIntegrationDb();
   emit.mockClear();
   const actor = await prismaDirect.user.create({
-    data: { username: "data-admin", role: "Administrador", passwordHash: "test-only" },
+    data: { username: "data-admin", role: "Super_Administrador", passwordHash: "test-only" },
   });
   actorId = actor.id;
   token = (
@@ -484,7 +484,7 @@ describe("Spec020 data/configs on Fastify", () => {
     });
     await prismaDirect.user.update({
       where: { id: actorId },
-      data: { role: "Supervisor_Elevado" },
+      data: { role: "Administrador" },
     });
     expect((await http("POST", "/api/configs/custom", { value: false })).status).toBe(403);
     expect((await http("GET", "/api/configs/validate-closure?date=2020-01-01")).status).toBe(403);
@@ -872,7 +872,10 @@ describe("Spec027 brand logo (branding_logo)", () => {
     // Rol sin permisos: 403.
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     expect((await uploadLogo(Buffer.from("x"))).status).toBe(403);
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Super_Administrador" },
+    });
 
     // MIME y contenido rechazados, sin dejar archivo nuevo.
     const before = await fs.readdir(brandDirectory).catch(() => [] as string[]);
@@ -954,12 +957,7 @@ describe("Spec027 brand logo (branding_logo)", () => {
     expect((await http("GET", "/api/meters")).status).toBe(403);
     expect((await http("POST", "/api/meters/bulk", [])).status).toBe(403);
 
-    for (const role of [
-      "Fiscalizador",
-      "Supervisor",
-      "Reloj_Control",
-      "Supervisor_Elevado",
-    ] as const) {
+    for (const role of ["Fiscalizador", "Supervisor", "Reloj_Control", "Administrador"] as const) {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
       const empty = await http("GET", "/api/configs/communications_content");
       expect(empty.status).toBe(200);
@@ -969,7 +967,10 @@ describe("Spec027 brand logo (branding_logo)", () => {
       ).toBe(403);
     }
 
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Super_Administrador" },
+    });
     expect(
       (await http("POST", "/api/configs/communications_content", { value: "Aviso importante" }))
         .status,

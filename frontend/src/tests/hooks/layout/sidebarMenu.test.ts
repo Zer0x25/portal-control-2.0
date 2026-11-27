@@ -32,8 +32,8 @@ describe("buildSidebarMenuByRole", () => {
     ]);
   });
 
-  it("keeps Supervisión in Supervisor, Supervisor_Elevado and Administrador menus", () => {
-    for (const role of ["Supervisor", "Supervisor_Elevado", "Administrador"] as const) {
+  it("keeps Supervisión in Supervisor, Administrador and Super_Administrador menus", () => {
+    for (const role of ["Supervisor", "Administrador", "Super_Administrador"] as const) {
       const items = buildSidebarMenuByRole({
         role,
         isControlInternoEnabled: true,
@@ -43,8 +43,8 @@ describe("buildSidebarMenuByRole", () => {
     }
   });
 
-  it("shows Config only to Administrador and Supervisor_Elevado", () => {
-    for (const role of ["Administrador", "Supervisor_Elevado"] as const) {
+  it("shows Config only to Super_Administrador and Administrador", () => {
+    for (const role of ["Super_Administrador", "Administrador"] as const) {
       const items = buildSidebarMenuByRole({
         role,
         isControlInternoEnabled: true,

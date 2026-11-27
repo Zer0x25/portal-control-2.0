@@ -63,7 +63,7 @@ async function main() {
       data: {
         username: "admin",
         passwordHash: hashedPassword,
-        role: "Administrador",
+        role: "Super_Administrador",
       },
     });
   }

@@ -65,7 +65,7 @@ export function mapUserRole(role: string): string {
   const roles: Record<string, string> = {
     Empleado: "Usuario",
     "Reloj Control": "Reloj_Control",
-    "Supervisor Elevado": "Supervisor_Elevado",
+    "Supervisor Elevado": "Administrador",
   };
   return roles[role] || role || "Usuario";
 }
@@ -144,8 +144,8 @@ export function createUserFlows(deps: UserFlowDependencies) {
     },
     async deleteUser(id: string, actorUsername: string, actorRole?: string) {
       const user = await deps.repository.findUsername(id);
-      if (actorRole === "Supervisor_Elevado" && user?.role === "Administrador") {
-        const message = "Acceso denegado: No puede eliminar usuarios Administrador";
+      if (actorRole === "Administrador" && user?.role === "Super_Administrador") {
+        const message = "Acceso denegado: No puede eliminar usuarios Super_Administrador";
         throw deps.forbidden ? deps.forbidden(message) : new Error(message);
       }
       await deps.repository.delete(id, actorRole);

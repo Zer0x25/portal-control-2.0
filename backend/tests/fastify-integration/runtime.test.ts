@@ -97,7 +97,7 @@ it("authenticates websocket identity and revokes sessions before delivery", asyn
   expect((await polling.text()).startsWith("0")).toBe(true);
   await expect(websocket("")).rejects.toThrow("Unauthorized");
   const user = await prismaDirect.user.create({
-    data: { username: "socket-owner", role: "Administrador", passwordHash: "not-used" },
+    data: { username: "socket-owner", role: "Super_Administrador", passwordHash: "not-used" },
   });
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
@@ -131,7 +131,7 @@ it("authenticates websocket identity and revokes sessions before delivery", asyn
 });
 it("delivers only projected role-authorized frames with persisted sessions", async () => {
   const frames = new Map<string, string[]>();
-  for (const role of ["Administrador", "Fiscalizador", "Usuario"] as const) {
+  for (const role of ["Super_Administrador", "Fiscalizador", "Usuario"] as const) {
     const user = await prismaDirect.user.create({
       data: { username: `event-${role}`, role, passwordHash: "not-used" },
     });
@@ -160,7 +160,7 @@ it("delivers only projected role-authorized frames with persisted sessions", asy
     for (const received of frames.values())
       expect(received).toContain('42["system:maintenance",{"active":false}]');
   });
-  expect(frames.get("Administrador")).toContain('42["seeder:phase2_failed",{"jobId":"job"}]');
+  expect(frames.get("Super_Administrador")).toContain('42["seeder:phase2_failed",{"jobId":"job"}]');
   expect(frames.get("Fiscalizador")).toContain('42["auditLog:created",{"changed":true}]');
   expect(frames.get("Fiscalizador")!.some((frame) => frame.includes("seeder"))).toBe(false);
   expect(frames.get("Usuario")!.some((frame) => /seeder|auditLog/.test(frame))).toBe(false);

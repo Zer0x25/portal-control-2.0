@@ -693,8 +693,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador",
             ],
             "type": "string",
@@ -3603,8 +3603,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado",
             ],
@@ -3651,8 +3651,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Usuario",
               "Reloj_Control",
               "Supervisor",
+              "Super_Administrador",
               "Administrador",
-              "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado",
             ],
@@ -4443,7 +4443,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "description": "Secreto generado",
           },
           "403": {
-            "description": "Requiere rol Administrador",
+            "description": "Requiere rol Super_Administrador",
           },
           "409": {
             "description": "MFA ya habilitado",
@@ -4454,7 +4454,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "bearerAuth": [],
           },
         ],
-        "summary": "Genera secreto MFA y QR (Solo Administrador)",
+        "summary": "Genera secreto MFA y QR (Solo Super_Administrador)",
         "tags": [
           "Auth",
         ],
@@ -4582,7 +4582,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "description": "MFA no configurado o código inválido",
           },
           "403": {
-            "description": "Requiere rol Administrador",
+            "description": "Requiere rol Super_Administrador",
           },
           "409": {
             "description": "MFA ya habilitado",
@@ -4593,7 +4593,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "bearerAuth": [],
           },
         ],
-        "summary": "Habilita MFA tras verificar primer código (Solo Administrador)",
+        "summary": "Habilita MFA tras verificar primer código (Solo Super_Administrador)",
         "tags": [
           "Auth",
         ],

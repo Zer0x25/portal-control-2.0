@@ -166,12 +166,12 @@ export class MaintenanceService {
           { id: string; username: string; role: string }[]
         >`SELECT id, username, role FROM users WHERE id = ${currentUser.id} FOR UPDATE`;
         const actor = locked[0];
-        if (!actor || actor.role !== "Administrador")
+        if (!actor || actor.role !== "Super_Administrador")
           throw new ForbiddenError("Se requiere un administrador existente");
         const running = await tx.seedingJob.count({ where: { status: "running" } });
         if (running) throw new ConflictError("Detén los jobs activos antes del reset");
         const preserved = await tx.user.findMany({
-          where: { OR: [{ id: actor.id }, { username: "admin", role: "Administrador" }] },
+          where: { OR: [{ id: actor.id }, { username: "admin", role: "Super_Administrador" }] },
           select: { id: true },
         });
         const ids = preserved.map((user) => user.id);

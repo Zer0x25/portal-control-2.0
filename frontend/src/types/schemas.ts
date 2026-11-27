@@ -30,6 +30,7 @@ export const UserSchema = SyncableSchema.extend({
     "Usuario",
     "Reloj Control",
     "Supervisor",
+    "Super_Administrador",
     "Administrador",
     "Supervisor Elevado",
     "Fiscalizador",

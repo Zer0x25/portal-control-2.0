@@ -25,8 +25,11 @@ const params = z.object({ id: z.string() });
 // Validate without replacing input to preserve the public API contract.
 export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, options) => {
   const manager: onRequestHookHandler = async (request) => {
-    if (!request.user?.role || !["Administrador", "Supervisor_Elevado"].includes(request.user.role))
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    if (
+      !request.user?.role ||
+      !["Super_Administrador", "Administrador"].includes(request.user.role)
+    )
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
   };
   const access = { config: { requiresAuth: true }, onRequest: [options.authenticate, manager] };
   const readAccess = {
@@ -63,11 +66,11 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
     { ...access, preHandler: validateRequest("body", CreateUserSchema) },
     async (request, reply) => {
       if (
-        request.user?.role === "Supervisor_Elevado" &&
-        mapUserRole(request.body.role) === "Administrador"
+        request.user?.role === "Administrador" &&
+        mapUserRole(request.body.role) === "Super_Administrador"
       ) {
         throw new ForbiddenError(
-          "Acceso denegado: No tiene permisos para crear usuarios Administrador",
+          "Acceso denegado: No tiene permisos para crear usuarios Super_Administrador",
         );
       }
       return reply
@@ -88,10 +91,10 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
     },
     async (request) => {
       const actorRole = request.user?.role;
-      const isManager = actorRole === "Administrador" || actorRole === "Supervisor_Elevado";
+      const isManager = actorRole === "Super_Administrador" || actorRole === "Administrador";
       const isSelf = request.user?.id === request.params.id;
       if (!isManager && !isSelf) {
-        throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+        throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
       }
       if (!isManager) {
         const bodyKeys = Object.keys(request.body || {});
@@ -103,11 +106,11 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
         }
       }
       if (
-        actorRole === "Supervisor_Elevado" &&
+        actorRole === "Administrador" &&
         request.body.role &&
-        mapUserRole(request.body.role) === "Administrador"
+        mapUserRole(request.body.role) === "Super_Administrador"
       ) {
-        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Administrador");
+        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Super_Administrador");
       }
       const accessToken = resolveAccessToken(request.headers.authorization);
       const currentTokenHash = accessToken

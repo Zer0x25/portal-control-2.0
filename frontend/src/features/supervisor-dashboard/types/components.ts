@@ -133,7 +133,7 @@ export interface SupervisorPermissionWrapperProps {
   showMessage?: boolean;
 }
 
-export type SupervisorRoleType = "Supervisor" | "Supervisor_Elevado";
+export type SupervisorRoleType = "Supervisor" | "Administrador";
 
 // ============================================================================
 // SUPERVISOR LOADING SKELETON TYPES

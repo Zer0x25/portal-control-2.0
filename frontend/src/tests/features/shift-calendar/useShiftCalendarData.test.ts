@@ -19,7 +19,7 @@ const {
   exportCalendarToPDFMock: vi.fn(),
 }));
 
-let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Administrador" };
+let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Super_Administrador" };
 let mockEmployeesError = false;
 let mockEmployeesLoading = false;
 let mockCalendarData: {
@@ -79,7 +79,7 @@ describe("useShiftCalendarData", () => {
     vi.clearAllMocks();
     exportShiftScheduleToICSMock.mockReturnValue(true);
     exportCalendarToPDFMock.mockReturnValue(true);
-    mockCurrentUser = { role: "Administrador" };
+    mockCurrentUser = { role: "Super_Administrador" };
     mockEmployeesError = false;
     mockEmployeesLoading = false;
     mockCalendarData = {

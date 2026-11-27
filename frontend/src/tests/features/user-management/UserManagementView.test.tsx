@@ -25,7 +25,7 @@ describe("UserManagementView", () => {
       {
         id: "u1",
         username: "admin",
-        role: "Administrador",
+        role: "Super_Administrador",
         lastModified: 0,
         syncStatus: "synced",
         isDeleted: false,
@@ -47,7 +47,7 @@ describe("UserManagementView", () => {
     currentUser: {
       id: "u1",
       username: "admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       lastModified: 0,
       syncStatus: "synced",
       isDeleted: false,

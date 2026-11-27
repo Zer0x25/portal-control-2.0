@@ -76,7 +76,7 @@ export const useQuickNotesModalController = () => {
   };
 
   const canDelete = (authorUsername: string) => {
-    return authorUsername === currentUser?.username || currentUser?.role === "Administrador";
+    return authorUsername === currentUser?.username || currentUser?.role === "Super_Administrador";
   };
 
   return {

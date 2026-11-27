@@ -13,7 +13,7 @@ export const notesPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (req) => {
     if (
       !req.user ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
+      !["Super_Administrador", "Administrador", "Supervisor", "Reloj_Control"].includes(
         req.user.role,
       )
     )

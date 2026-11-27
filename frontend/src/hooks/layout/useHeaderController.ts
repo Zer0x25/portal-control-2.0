@@ -66,7 +66,7 @@ export const useHeaderController = () => {
     setIsDropdownOpen(false);
   };
 
-  const canConfigureMfa = currentUser?.role === "Administrador" && !currentUser.mfaEnabled;
+  const canConfigureMfa = currentUser?.role === "Super_Administrador" && !currentUser.mfaEnabled;
 
   const welcomeName = (() => {
     if (currentUser?.employeeId) {

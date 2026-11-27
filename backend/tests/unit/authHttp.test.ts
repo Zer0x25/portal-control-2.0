@@ -8,7 +8,7 @@ const apps: FastifyInstance[] = [];
 afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
 });
-function fixture(role: string = "Administrador") {
+function fixture(role: string = "Super_Administrador") {
   const user = {
     id: "u1",
     username: "alice",

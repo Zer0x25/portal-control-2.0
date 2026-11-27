@@ -6,7 +6,7 @@ function fixture() {
   const user = {
     id: "u1",
     username: "alice",
-    role: "Supervisor_Elevado",
+    role: "Administrador",
     employeeId: null,
     mfaEnabled: false,
     credentialStamp: "private-credential-proof",
@@ -38,7 +38,7 @@ const context = { ip: "127.0.0.1", userAgent: "test-agent", user: { id: "u1", us
 const adminContext = {
   ip: "127.0.0.1",
   userAgent: "test-agent",
-  user: { id: "u1", username: "alice", role: "Administrador" },
+  user: { id: "u1", username: "alice", role: "Super_Administrador" },
 };
 describe("Shared auth flows", () => {
   it("creates session, normalizes role, clears failures and audits login without credentials", async () => {
@@ -48,7 +48,7 @@ describe("Shared auth flows", () => {
       body: {
         userId: "u1",
         username: "alice",
-        role: "Supervisor_Elevado",
+        role: "Administrador",
         employeeId: null,
         token: "access",
         mustChangePassword: true,
@@ -59,7 +59,7 @@ describe("Shared auth flows", () => {
     expect(f.deps.service.createSession).toHaveBeenCalledWith(
       "u1",
       "alice",
-      "Supervisor_Elevado",
+      "Administrador",
       null,
       "test-agent",
       "private-credential-proof",
@@ -150,7 +150,7 @@ describe("Shared auth flows", () => {
       }),
     );
   });
-  it("sets up and confirms MFA only with an authenticated Administrador", async () => {
+  it("sets up and confirms MFA only with an authenticated Super_Administrador", async () => {
     const f = fixture();
     await expect(f.flows.setupMFA({})).rejects.toMatchObject({ statusCode: 401 });
     await expect(

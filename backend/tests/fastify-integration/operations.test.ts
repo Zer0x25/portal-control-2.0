@@ -84,7 +84,7 @@ beforeEach(async () => {
   await resetIntegrationDb();
   ip = "192.0.2." + ++sequence;
   gzip = false;
-  const actor = await user("operations-admin", "Administrador");
+  const actor = await user("operations-admin", "Super_Administrador");
   actorId = actor.saved.id;
   token = actor.access;
   vi.spyOn(SocketService, "emitToAll").mockImplementation(() => {});
@@ -120,7 +120,7 @@ describe("Spec023 operations on Fastify", () => {
     expect(backupService.restoreDatabase).not.toHaveBeenCalled();
     expect(runtimeControlService.scheduleRestart).not.toHaveBeenCalled();
   });
-  it.each(["Supervisor_Elevado", "Supervisor", "Fiscalizador", "Reloj_Control", "Usuario"])(
+  it.each(["Administrador", "Supervisor", "Fiscalizador", "Reloj_Control", "Usuario"])(
     "rejects %s on every route despite stale Admin JWT",
     async (role) => {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role: role as "Usuario" } });

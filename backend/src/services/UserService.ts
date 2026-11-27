@@ -171,11 +171,13 @@ export class UserService {
       if (!existing) {
         throw new NotFoundError("El recurso solicitado no existe");
       }
-      if (actorContext?.actorRole === "Supervisor_Elevado" && existing.role === "Administrador") {
-        throw new ForbiddenError("Acceso denegado: No puede modificar usuarios Administrador");
+      if (actorContext?.actorRole === "Administrador" && existing.role === "Super_Administrador") {
+        throw new ForbiddenError(
+          "Acceso denegado: No puede modificar usuarios Super_Administrador",
+        );
       }
-      if (actorContext?.actorRole === "Supervisor_Elevado" && update.role === "Administrador") {
-        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Administrador");
+      if (actorContext?.actorRole === "Administrador" && update.role === "Super_Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Super_Administrador");
       }
       const updated = await tx.user.update({
         select: publicUserSelect,
@@ -245,8 +247,10 @@ export class UserService {
           if (!target) {
             throw new NotFoundError("El recurso solicitado no existe");
           }
-          if (actorRole === "Supervisor_Elevado" && target.role === "Administrador") {
-            throw new ForbiddenError("Acceso denegado: No puede eliminar usuarios Administrador");
+          if (actorRole === "Administrador" && target.role === "Super_Administrador") {
+            throw new ForbiddenError(
+              "Acceso denegado: No puede eliminar usuarios Super_Administrador",
+            );
           }
           await tx.user.delete({ where: { id } });
         });

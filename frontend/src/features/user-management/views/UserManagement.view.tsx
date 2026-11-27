@@ -89,7 +89,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     props.canCreateUsers ??
     Boolean(
       currentUser &&
-      (currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado"),
+      (currentUser.role === "Super_Administrador" || currentUser.role === "Administrador"),
     );
 
   const renderDesktopView = () => (

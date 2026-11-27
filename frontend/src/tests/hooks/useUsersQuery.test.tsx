@@ -41,7 +41,7 @@ describe("useUsersQuery role and session gating", () => {
     server.use(
       http.get(`${TEST_API_URL}/users`, () =>
         HttpResponse.json([
-          buildUser("Administrador"),
+          buildUser("Super_Administrador"),
           { ...buildUser("Usuario"), id: "deleted-user", isDeleted: true },
         ]),
       ),
@@ -69,7 +69,7 @@ describe("useUsersQuery role and session gating", () => {
     },
   );
 
-  it.each(["Administrador", "Supervisor_Elevado"] as const)(
+  it.each(["Super_Administrador", "Administrador"] as const)(
     "ejecuta GET /api/users y filtra eliminados para rol autorizado (%s)",
     async (role) => {
       useStore.setState({ currentUser: buildUser(role), isAuthenticated: true });
@@ -79,7 +79,7 @@ describe("useUsersQuery role and session gating", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(recorder.countOf("GET", "/api/users")).toBe(1);
       expect(result.current.data).toHaveLength(1);
-      expect(result.current.data?.[0]?.id).toBe("user-Administrador");
+      expect(result.current.data?.[0]?.id).toBe("user-Super_Administrador");
     },
   );
 
@@ -93,7 +93,10 @@ describe("useUsersQuery role and session gating", () => {
   });
 
   it("no ejecuta GET /api/users cuando mustChangePassword es true", () => {
-    useStore.setState({ currentUser: buildUser("Administrador", true), isAuthenticated: true });
+    useStore.setState({
+      currentUser: buildUser("Super_Administrador", true),
+      isAuthenticated: true,
+    });
 
     const { result } = renderHook(() => useUsersQuery(), { wrapper });
 
@@ -102,7 +105,10 @@ describe("useUsersQuery role and session gating", () => {
   });
 
   it("no ejecuta GET /api/users cuando options.enabled es false", () => {
-    useStore.setState({ currentUser: buildUser("Administrador", false), isAuthenticated: true });
+    useStore.setState({
+      currentUser: buildUser("Super_Administrador", false),
+      isAuthenticated: true,
+    });
 
     const { result } = renderHook(() => useUsersQuery({ enabled: false }), { wrapper });
 
@@ -112,7 +118,10 @@ describe("useUsersQuery role and session gating", () => {
 
   it("no ejecuta GET /api/users sin token de sesión", () => {
     authTokenStore.removeToken();
-    useStore.setState({ currentUser: buildUser("Administrador", false), isAuthenticated: true });
+    useStore.setState({
+      currentUser: buildUser("Super_Administrador", false),
+      isAuthenticated: true,
+    });
 
     const { result } = renderHook(() => useUsersQuery(), { wrapper });
 

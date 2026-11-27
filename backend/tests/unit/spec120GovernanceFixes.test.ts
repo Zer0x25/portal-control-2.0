@@ -186,7 +186,7 @@ afterEach(() => {
 });
 
 describe("Spec 120 governance, audit, backup & seeding fixes", () => {
-  it("BE-1: /api/health returns public payload for anonymous/non-admin and detailed for Administrador", async () => {
+  it("BE-1: /api/health returns public payload for anonymous/non-admin and detailed for Super_Administrador", async () => {
     const anon = makeMinimalApp("Usuario");
     const resAnon = await anon.app.inject({ method: "GET", url: "/api/health" });
     expect(resAnon.statusCode).toBe(200);
@@ -203,7 +203,7 @@ describe("Spec 120 governance, audit, backup & seeding fixes", () => {
     expect(anon.getPublicHealth).toHaveBeenCalledTimes(2);
     expect(anon.getDetailedHealth).not.toHaveBeenCalled();
 
-    const admin = makeMinimalApp("Administrador");
+    const admin = makeMinimalApp("Super_Administrador");
     const adminRes = await admin.app.inject({
       method: "GET",
       url: "/api/health",
@@ -235,7 +235,7 @@ describe("Spec 120 governance, audit, backup & seeding fixes", () => {
     expect(forbidden.statusCode).toBe(403);
     expect(auditor.auditCreate).not.toHaveBeenCalled();
 
-    const supervisor = makeMinimalApp("Supervisor_Elevado");
+    const supervisor = makeMinimalApp("Administrador");
     const created = await supervisor.app.inject({
       method: "POST",
       url: "/api/audit-logs",
@@ -288,7 +288,7 @@ describe("Spec 120 governance, audit, backup & seeding fixes", () => {
   });
 
   it("BE-4: /api/maintenance/seed/phase2/logs validates query and seedingJobService validates transitions", async () => {
-    const admin = makeMinimalApp("Administrador");
+    const admin = makeMinimalApp("Super_Administrador");
     const badLimit = await admin.app.inject({
       method: "GET",
       url: "/api/maintenance/seed/phase2/logs?jobId=j1&limit=abc",

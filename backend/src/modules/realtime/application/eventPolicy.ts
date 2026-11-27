@@ -8,16 +8,21 @@ export interface RealtimeDelivery {
   payload: Payload;
 }
 const roles = new Set([
+  "Super_Administrador",
   "Administrador",
-  "Supervisor_Elevado",
   "Supervisor",
   "Reloj_Control",
   "Fiscalizador",
   "Usuario",
   "Kiosk_Employee",
 ]);
-const supervisors = new Set(["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"]);
-const auditViewers = new Set(["Administrador", "Supervisor_Elevado", "Fiscalizador"]);
+const supervisors = new Set([
+  "Super_Administrador",
+  "Administrador",
+  "Supervisor",
+  "Reloj_Control",
+]);
+const auditViewers = new Set(["Super_Administrador", "Administrador", "Fiscalizador"]);
 const scoped = new Set([
   "timeRecord:created",
   "timeRecord:updated",
@@ -111,7 +116,7 @@ export function projectRealtimeEvent(
     };
   }
   if (event === "system_notification") {
-    if (recipient.role !== "Administrador") return;
+    if (recipient.role !== "Super_Administrador") return;
     return {
       payload: {
         title: "Notificación del sistema",
@@ -121,7 +126,7 @@ export function projectRealtimeEvent(
     };
   }
   if (seederEvents.has(event)) {
-    if (recipient.role !== "Administrador") return;
+    if (recipient.role !== "Super_Administrador") return;
     const payload: Payload = {};
     if (typeof value.jobId === "string") payload.jobId = value.jobId;
     if (event === "seeder:phase2_progress") {
@@ -149,7 +154,7 @@ export function projectRealtimeEvent(
       staff.has(recipient.role) || (!!recipient.employeeId && value.id === recipient.employeeId);
   else if (supervisorEvents.has(event)) allowed = supervisors.has(recipient.role);
   else if (event === "auditLog:created") allowed = auditViewers.has(recipient.role);
-  else if (event === "user:updated") allowed = recipient.role === "Administrador";
+  else if (event === "user:updated") allowed = recipient.role === "Super_Administrador";
   else if (["holiday:updated", "shiftPattern:updated", "config:updated"].includes(event))
     allowed = true;
   if (!allowed) return;

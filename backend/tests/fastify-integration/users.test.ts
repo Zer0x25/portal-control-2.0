@@ -41,7 +41,7 @@ beforeEach(async () => {
   const admin = await prismaDirect.user.create({
     data: {
       username: "dto-admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       passwordHash: bcrypt.hashSync(password, 4),
       mfaEnabled: true,
       mfaSecret: "private-admin-mfa",
@@ -77,7 +77,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     const target = await prismaDirect.user.create({
       data: {
         username: "dto-target",
-        role: "Supervisor_Elevado",
+        role: "Administrador",
         passwordHash: "private-target-hash",
         mfaSecret: "private-target-mfa",
         mfaEnabled: true,
@@ -94,7 +94,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     assertSafe(paginated.body.data[0]);
     expect(paginated.body.data[0]).toMatchObject({
       id: target.id,
-      role: "Supervisor_Elevado",
+      role: "Administrador",
       mfaEnabled: true,
       mustChangePassword: true,
     });
@@ -178,7 +178,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
       expect(denied.status).toBe(403);
       expect(denied.body).toMatchObject({
         code: "FORBIDDEN",
-        message: "Acceso denegado: Se requieren permisos de Administrador",
+        message: "Acceso denegado: Se requieren permisos de Super_Administrador",
       });
       expect(await prismaDirect.user.count()).toBe(1);
       expect(vi.mocked(SocketService.emit)).not.toHaveBeenCalled();
@@ -190,7 +190,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
         await http("POST", "/api/users", {
           username: "x",
           password: "bad",
-          role: "Administrador",
+          role: "Super_Administrador",
         })
       ).status,
     ).toBe(400);
@@ -251,7 +251,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     const created = await http("POST", "/api/users", {
       username: "linked-user",
       password,
-      role: "Supervisor_Elevado",
+      role: "Administrador",
       employeeId: employee.id,
     });
     expect(created.status).toBe(201);
@@ -356,7 +356,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     // Admin changing role or archiving revokes ALL sessions
     forceLogoutSpy.mockClear();
     const adminRoleChange = await http("PUT", `/api/users/${targetId}`, {
-      role: "Supervisor_Elevado",
+      role: "Administrador",
       mustChangePassword: true,
     });
     expect(adminRoleChange.status).toBe(200);
@@ -368,7 +368,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     );
   });
 
-  it("[Spec 116] validates pagination, supports employeeId: null, blocks self-delete, and enforces Supervisor_Elevado hierarchy", async () => {
+  it("[Spec 116] validates pagination, supports employeeId: null, blocks self-delete, and enforces Administrador hierarchy", async () => {
     // 1. Invalid pagination -> 400 VALIDATION_ERROR
     for (const qs of [
       "page=0&pageSize=1",
@@ -412,11 +412,11 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     expect(unlinked.status).toBe(200);
     expect(unlinked.body.employeeId).toBeNull();
 
-    // 4. Supervisor_Elevado can manage non-Admin users but gets 403 for Admin targets/escalation
+    // 4. Administrador can manage non-Admin users but gets 403 for Admin targets/escalation
     const elevated = await prismaDirect.user.create({
       data: {
         username: "elevated-mgr",
-        role: "Supervisor_Elevado",
+        role: "Administrador",
         passwordHash: "hash",
       },
     });
@@ -439,13 +439,13 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     );
     expect(createdByElevated.status).toBe(201);
 
-    // Forbidden: create Administrador
+    // Forbidden: create Super_Administrador
     expect(
       (
         await http(
           "POST",
           "/api/users",
-          { username: "forged-admin", password, role: "Administrador" },
+          { username: "forged-admin", password, role: "Super_Administrador" },
           elevatedToken,
         )
       ).status,
@@ -463,13 +463,13 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
       ).status,
     ).toBe(200);
 
-    // Forbidden: escalate to Administrador or edit Administrador
+    // Forbidden: escalate to Super_Administrador or edit Super_Administrador
     expect(
       (
         await http(
           "PUT",
           `/api/users/${createdByElevated.body.id}`,
-          { role: "Administrador" },
+          { role: "Super_Administrador" },
           elevatedToken,
         )
       ).status,
@@ -478,7 +478,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
       (await http("PUT", `/api/users/${admin.id}`, { username: "hacked" }, elevatedToken)).status,
     ).toBe(403);
 
-    // Forbidden: delete Administrador
+    // Forbidden: delete Super_Administrador
     expect((await http("DELETE", `/api/users/${admin.id}`, undefined, elevatedToken)).status).toBe(
       403,
     );

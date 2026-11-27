@@ -28,7 +28,7 @@ const widget: DashboardWidget = {
   component: WidgetFixture,
   defaultVisible: true,
   mobileVisible: true,
-  roles: ["Administrador"],
+  roles: ["Super_Administrador"],
 };
 
 const makeProps = (overrides: Partial<React.ComponentProps<typeof DashboardView>> = {}) => ({

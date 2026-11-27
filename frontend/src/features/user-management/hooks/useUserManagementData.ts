@@ -77,17 +77,17 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
 
   const canCreateUsers = Boolean(
     currentUser &&
-    (currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado"),
+    (currentUser.role === "Super_Administrador" || currentUser.role === "Administrador"),
   );
 
   const canManageUser = (user: User) => {
     if (!currentUser) return false;
     if (currentUser.id === user.id) return false;
-    if (currentUser.role === "Administrador") {
+    if (currentUser.role === "Super_Administrador") {
       return true;
     }
-    if (currentUser.role === "Supervisor_Elevado") {
-      return user.role !== "Administrador";
+    if (currentUser.role === "Administrador") {
+      return user.role !== "Super_Administrador";
     }
     return false;
   };

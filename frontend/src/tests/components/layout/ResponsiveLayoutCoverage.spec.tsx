@@ -195,7 +195,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       render(
         <HeaderView
           toggleSidebar={vi.fn()}
-          currentUser={{ role: "Administrador" }}
+          currentUser={{ role: "Super_Administrador" }}
           welcomeName="Admin User"
           systemStatus="online"
           soundEnabled={true}
@@ -229,7 +229,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
     it("renders mfa-setup-button in user menu dropdown only when canConfigureMfa is true", () => {
       const baseHeaderProps = {
         toggleSidebar: vi.fn(),
-        currentUser: { role: "Administrador" },
+        currentUser: { role: "Super_Administrador" },
         welcomeName: "Admin User",
         systemStatus: "online",
         soundEnabled: true,

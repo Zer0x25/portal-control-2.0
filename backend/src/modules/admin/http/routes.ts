@@ -14,8 +14,8 @@ export const adminPlugin: FastifyPluginAsync<{
   authenticate: onRequestHookHandler;
 }> = async (app, options) => {
   const admin: onRequestHookHandler = async (req) => {
-    if (req.user?.role !== "Administrador")
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    if (req.user?.role !== "Super_Administrador")
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Super_Administrador");
   };
   const base = { config: { requiresAuth: true }, onRequest: [options.authenticate, admin] };
   const query = { ...base, preHandler: validateRequest("query", z.unknown()) };

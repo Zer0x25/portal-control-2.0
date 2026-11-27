@@ -77,7 +77,7 @@ describe("Correction approve race", () => {
           status: "approved",
           resolvedBy: "admin",
           actorUsername: "admin",
-          actorRole: "Administrador",
+          actorRole: "Super_Administrador",
         }),
       ),
     );
@@ -134,7 +134,7 @@ describe("Correction approve race", () => {
         status: "approved",
         resolvedBy: "admin",
         actorUsername: "admin",
-        actorRole: "Administrador",
+        actorRole: "Super_Administrador",
       });
       expect(res.status).toBe("approved");
 

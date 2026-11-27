@@ -63,7 +63,7 @@ beforeEach(async () => {
   const actor = await prismaDirect.user.create({
     data: {
       username: "shifts-admin",
-      role: "Administrador",
+      role: "Super_Administrador",
       passwordHash: "test-only",
       employeeId: employee.id,
     },

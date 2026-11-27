@@ -7,13 +7,13 @@ import { ForbiddenError } from "../../../utils/AppError";
 import type { LeaveFlows } from "../application/flows";
 import type { LeaveQuery } from "../application/contracts";
 const READ_ROLES = [
+  "Super_Administrador",
   "Administrador",
-  "Supervisor_Elevado",
   "Supervisor",
   "Reloj_Control",
   "Fiscalizador",
 ];
-const WRITE_ROLES = ["Administrador", "Supervisor_Elevado", "Supervisor"];
+const WRITE_ROLES = ["Super_Administrador", "Administrador", "Supervisor"];
 
 export const leavesPlugin: FastifyPluginAsync<{
   service: LeaveFlows;

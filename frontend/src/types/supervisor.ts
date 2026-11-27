@@ -10,7 +10,7 @@ import { Syncable } from "./common";
 // ROLES Y PERMISOS
 // ============================================================================
 
-export type SupervisorRole = Extract<UserRole, "Supervisor" | "Supervisor_Elevado">;
+export type SupervisorRole = Extract<UserRole, "Supervisor" | "Administrador">;
 
 export interface SupervisorPermissions {
   // Permisos de visualización
@@ -25,7 +25,7 @@ export interface SupervisorPermissions {
   canBlockEmployees: boolean;
   canManageShifts: boolean;
 
-  // Permisos administrativos (solo Supervisor_Elevado)
+  // Permisos administrativos (solo Administrador)
   canManageUsers: boolean;
   canConfigureSystem: boolean;
   canAccessAuditLogs: boolean;
@@ -273,7 +273,7 @@ export interface SupervisorMutationState {
 
 export const SUPERVISOR_ROLE_HIERARCHY: Record<SupervisorRole, number> = {
   Supervisor: 1,
-  Supervisor_Elevado: 2,
+  Administrador: 2,
 };
 
 export const SUPERVISOR_PERMISSIONS_BY_ROLE: Record<SupervisorRole, SupervisorPermissions> = {
@@ -290,7 +290,7 @@ export const SUPERVISOR_PERMISSIONS_BY_ROLE: Record<SupervisorRole, SupervisorPe
     canConfigureSystem: false,
     canAccessAuditLogs: false,
   },
-  Supervisor_Elevado: {
+  Administrador: {
     canViewAnalytics: true,
     canViewKPIs: true,
     canViewReports: true,
@@ -316,7 +316,7 @@ export type SupervisorWidgetId = string;
 
 // Type guards
 export const isSupervisorRole = (role: UserRole): role is SupervisorRole => {
-  return role === "Supervisor" || role === "Supervisor_Elevado";
+  return role === "Supervisor" || role === "Administrador";
 };
 
 export const hasSupervisorPermission = (

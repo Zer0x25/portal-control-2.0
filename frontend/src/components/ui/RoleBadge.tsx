@@ -12,13 +12,13 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({ role, className = "", size = "md"
     // Paleta categorica del design system (--chart-N): los roles son
     // categorias, no estados semanticos, asi que no usan --status-*.
     const roles: Record<UserRole, { color: string; bg: string; border: string; dot: string }> = {
-      Administrador: {
+      Super_Administrador: {
         color: "text-token-chart-6",
         bg: "bg-token-chart-6/10",
         border: "border-token-chart-6/30",
         dot: "bg-token-chart-6",
       },
-      Supervisor_Elevado: {
+      Administrador: {
         color: "text-token-chart-5",
         bg: "bg-token-chart-5/10",
         border: "border-token-chart-5/30",

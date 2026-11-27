@@ -3,7 +3,7 @@ import { createUserFlows, type UserProjection } from "../../src/modules/users";
 const row: UserProjection = {
   id: "u",
   username: "ana",
-  role: "Supervisor_Elevado",
+  role: "Administrador",
   employeeId: null,
   isForcePasswordChange: true,
   mfaEnabled: false,
@@ -40,7 +40,7 @@ describe("Spec 012 shared users flows", () => {
     expect(f.repository.create).toHaveBeenCalledWith({
       id: "new-id",
       username: "ana",
-      role: "Supervisor_Elevado",
+      role: "Administrador",
       passwordHash: "hashed:secret",
       employeeId: undefined,
       isForcePasswordChange: true,
@@ -91,9 +91,7 @@ describe("Spec 012 shared users flows", () => {
     expect(result).toMatchObject({
       total: 1,
       isPaginated: true,
-      users: [
-        { role: "Supervisor_Elevado", syncStatus: "synced", lastModified: 0, isDeleted: false },
-      ],
+      users: [{ role: "Administrador", syncStatus: "synced", lastModified: 0, isDeleted: false }],
     });
     expect(result.users[0]).not.toHaveProperty("isForcePasswordChange");
   });
@@ -106,17 +104,17 @@ describe("Spec 012 shared users flows", () => {
     expect(f.repository.create).toHaveBeenCalledTimes(1);
     expect(f.emit).not.toHaveBeenCalled();
   });
-  it("supports employeeId: null on update and blocks Supervisor_Elevado from deleting Administrador", async () => {
+  it("supports employeeId: null on update and blocks Administrador from deleting Super_Administrador", async () => {
     const f = fixture();
     await f.flows.updateUser("u", { employeeId: null }, "admin");
     expect(f.repository.update).toHaveBeenCalledWith("u", { employeeId: null });
 
     f.repository.findUsername.mockResolvedValueOnce({
       username: "root",
-      role: "Administrador",
+      role: "Super_Administrador",
     } as never);
-    await expect(f.flows.deleteUser("u-admin", "elevated", "Supervisor_Elevado")).rejects.toThrow(
-      "No puede eliminar usuarios Administrador",
+    await expect(f.flows.deleteUser("u-admin", "elevated", "Administrador")).rejects.toThrow(
+      "No puede eliminar usuarios Super_Administrador",
     );
     expect(f.repository.delete).not.toHaveBeenCalled();
   });

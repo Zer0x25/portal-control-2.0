@@ -20,7 +20,7 @@ it("never forwards sensitive business/config payloads, even to an administrator"
     "quickNote:created",
     "timeRecord:updated",
   ]) {
-    const result = projectRealtimeEvent(event, secret, user("Administrador"));
+    const result = projectRealtimeEvent(event, secret, user("Super_Administrador"));
     expect(result).toBeDefined();
     expect(JSON.stringify(result)).not.toMatch(/hash|mfa|smtp|private|other/);
   }
@@ -39,7 +39,7 @@ it("restricts audit, users, leaves and seeder to their HTTP roles", () => {
     projectRealtimeEvent(
       "seeder:phase2_failed",
       { jobId: "job", error: "password" },
-      user("Administrador"),
+      user("Super_Administrador"),
     ),
   ).toEqual({ payload: { jobId: "job" } });
 });
@@ -60,7 +60,7 @@ it("allows linked worker invalidation only for the same employee", () => {
   }
 });
 it("denies unknown events and roles; private notification requires matching target", () => {
-  expect(projectRealtimeEvent("unknown", {}, user("Administrador"))).toBeUndefined();
+  expect(projectRealtimeEvent("unknown", {}, user("Super_Administrador"))).toBeUndefined();
   expect(projectRealtimeEvent("holiday:updated", {}, user("unknown"))).toBeUndefined();
   const payload = {
     title: "Title",

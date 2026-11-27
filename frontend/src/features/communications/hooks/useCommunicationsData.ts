@@ -17,7 +17,7 @@ export const useCommunicationsData = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const isAdmin = currentUser?.role === "Administrador";
+  const isAdmin = currentUser?.role === "Super_Administrador";
 
   // La sanitización vive en el hook (capa de orquestación): la vista solo
   // presenta el HTML ya saneado (spec 033 AC1: sin hooks en *.view.tsx).
