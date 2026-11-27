@@ -227,6 +227,11 @@ const SeedingProgressModalView: React.FC<SeedingProgressModalViewProps> = ({
                 ¿Deseas iniciar la generación de marcaciones históricas?
               </p>
             </div>
+          ) : !effectiveIsFinished && job?.status === "pending" ? (
+            <div className="flex items-center justify-center text-token-status-info text-sm italic">
+              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+              <span>Fase 2 en cola, esperando al worker...</span>
+            </div>
           ) : !effectiveIsFinished && job?.status !== "paused" ? (
             <div className="flex items-center justify-center text-token-status-warning text-sm italic">
               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
@@ -259,7 +264,7 @@ const SeedingProgressModalView: React.FC<SeedingProgressModalViewProps> = ({
       </div>
 
       <div className="p-4 border-t border-token-border-subtle flex justify-end gap-2 bg-token-surface-stripe">
-        {isPhase2Active && job && (
+        {isPhase2Active && job && job.status !== "pending" && (
           <>
             {job.status === "running" && (
               <Button onClick={onPausePhase2} variant="secondary" size="sm">

@@ -92,21 +92,29 @@ export const useDeveloperPanelController = () => {
       // Optimization: Don't poll if tab is hidden
       if (!isTabVisible && !jobId) return;
       try {
+        // Sin jobId explicito se consulta el job mas reciente del backend:
+        // tras una fase 1 nueva el job viejo (completed/stopped) no debe
+        // secuestrar el visor del run actual.
         const status = await getSeedPhase2Status(jobId || phase2Job?.id);
         setPollError(null);
         if (status.job) {
+          const isNewJob = status.job.id !== phase2Job?.id;
           setPhase2Job(status.job);
-          const logsResp = await getSeedPhase2Logs(status.job.id);
-          if (Array.isArray(logsResp.logs)) {
-            setPhase2Logs(
-              logsResp.logs
-                .slice()
-                .reverse() // Reverse because backend now sends recent first (DESC)
-                .map(
-                  (l: { createdAt: string | number | Date; message: string }) =>
-                    `${new Date(l.createdAt).toLocaleTimeString()} ${l.message}`,
-                ),
-            );
+          // Los logs solo se recargan cuando cambia el job: el poll de 3s no
+          // debe pedir 200 lineas por tick con el mismo id.
+          if (isNewJob || phase2Logs.length === 0) {
+            const logsResp = await getSeedPhase2Logs(status.job.id);
+            if (Array.isArray(logsResp.logs)) {
+              setPhase2Logs(
+                logsResp.logs
+                  .slice()
+                  .reverse() // Reverse because backend now sends recent first (DESC)
+                  .map(
+                    (l: { createdAt: string | number | Date; message: string }) =>
+                      `${new Date(l.createdAt).toLocaleTimeString()} ${l.message}`,
+                  ),
+              );
+            }
           }
         }
       } catch (e) {
@@ -117,7 +125,7 @@ export const useDeveloperPanelController = () => {
         logger.warn("Poll de fase 2 fallo:", e);
       }
     },
-    [isTabVisible, phase2Job],
+    [isTabVisible, phase2Job, phase2Logs.length],
   );
 
   useEffect(() => {
@@ -252,6 +260,8 @@ export const useDeveloperPanelController = () => {
         correctionRequestRatio: seedingOptions.correctionRequestRatio,
       });
       setPhase2Job(res.job);
+      // Los logs del job viejo no deben colarse en el visor del nuevo.
+      setPhase2Logs([]);
       addToast("Fase 2 iniciada en background.", "success");
 
       // Modal is already open, it will now transition to Phase 2 view

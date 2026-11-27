@@ -53,8 +53,9 @@ const baseOptions = (
  *
  * Lo que fija esta suite es lo que la extraccion puede romper en silencio:
  *
- * 1. **Derived state de fases**: `isPhase2Active` solo con job ni
- *    stopped/pending, `effectiveIsFinished`/`effectiveError` segun fase y
+ * 1. **Derived state de fases**: `isPhase2Active` con cualquier job no
+ *    detenido (incluido `pending` = fase 2 en cola),
+ *    `effectiveIsFinished`/`effectiveError` segun fase y
  *    `isPhase1DonePhase2Pending` solo cuando la fase 1 termino y no hay
  *    job activo.
  * 2. **El cronometro**: reinicia al abrir, avanza por segundo mientras
@@ -93,16 +94,25 @@ describe("useSeedingProgressController", () => {
       expect(result.current.isPhase1DonePhase2Pending).toBe(false);
     });
 
-    it("con job stopped o pending, fase 2 inactiva (fase 1)", () => {
+    it("con job stopped, fase 2 inactiva (fase 1)", () => {
       const { result: stopped } = renderHook(() =>
-        useSeedingProgressController(baseOptions({ job: makeJob({ status: "stopped" }) })),
-      );
-      const { result: pending } = renderHook(() =>
-        useSeedingProgressController(baseOptions({ job: makeJob({ status: "pending" }) })),
+        useSeedingProgressController(
+          baseOptions({ isFinished: true, job: makeJob({ status: "stopped" }) }),
+        ),
       );
 
       expect(stopped.current.isPhase2Active).toBe(false);
-      expect(pending.current.isPhase2Active).toBe(false);
+      expect(stopped.current.isPhase1DonePhase2Pending).toBe(true);
+    });
+
+    it("con job pending, fase 2 activa (en cola del worker)", () => {
+      const { result } = renderHook(() =>
+        useSeedingProgressController(baseOptions({ job: makeJob({ status: "pending" }) })),
+      );
+
+      expect(result.current.isPhase2Active).toBe(true);
+      expect(result.current.isPhase1DonePhase2Pending).toBe(false);
+      expect(result.current.effectiveIsFinished).toBe(false);
     });
 
     it("con job completed o failed, final efectivo con el resumen del job", () => {

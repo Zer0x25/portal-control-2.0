@@ -37,11 +37,12 @@ export const useSeedingProgressController = ({
   const logEndRef = React.useRef<HTMLDivElement | null>(null);
 
   /**
-   * Fase 2 "activa": el job existe y no esta ni detenido ni pendiente
-   * (un job stopped/pending significa que la fase 1 termino pero la
-   * fase 2 aun no arranca).
+   * Fase 2 "activa": el job existe y no esta detenido. Un job `pending`
+   * significa que la fase 2 ya fue iniciada por el operador y esta en cola
+   * (el worker la transicionara a `running`); solo `stopped` indica que la
+   * fase 2 no corrio (job pre-creado al finalizar la fase 1).
    */
-  const isPhase2Active = !!job && job.status !== "stopped" && job.status !== "pending";
+  const isPhase2Active = !!job && job.status !== "stopped";
 
   /** Final efectivo: terminal de fase 2 cuando hay job; bandera de fase 1 si no. */
   const effectiveIsFinished = isPhase2Active
