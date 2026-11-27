@@ -129,14 +129,16 @@ export const useDeveloperPanelController = () => {
   );
 
   useEffect(() => {
-    // Only poll for Phase 2 status when Phase 1 is done or when panel is open
-    // AND the tab is visible to prevent CPU spikes
+    // Only poll for Phase 2 status when Phase 1 is done or a job is active,
+    // and only while the tab is visible to prevent CPU spikes. El panel de
+    // desarrollador abierto NO habilita el poll por si solo: sin job activo
+    // solo generaria ruido de requests cada 3s.
     const shouldPoll =
       isTabVisible &&
-      (isDevPanelOpen ||
-        (isSeedingFinished && isSeedingModalOpen) ||
+      ((isSeedingFinished && isSeedingModalOpen) ||
         phase2Job?.status === "running" ||
-        phase2Job?.status === "paused");
+        phase2Job?.status === "paused" ||
+        phase2Job?.status === "pending");
     if (!shouldPoll) return;
 
     void refreshPhase2Status();
@@ -144,14 +146,7 @@ export const useDeveloperPanelController = () => {
       void refreshPhase2Status();
     }, 3000);
     return () => clearInterval(i);
-  }, [
-    isDevPanelOpen,
-    isSeedingFinished,
-    isSeedingModalOpen,
-    phase2Job?.status,
-    isTabVisible,
-    refreshPhase2Status,
-  ]);
+  }, [isSeedingFinished, isSeedingModalOpen, phase2Job?.status, isTabVisible, refreshPhase2Status]);
 
   useEffect(() => {
     let mounted = true;
