@@ -1,5 +1,49 @@
 # Changelog
 
+## [8.44.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.43.1...v8.44.0) (2026-11-27)
+
+
+### Features
+
+* **dashboard:** implementar el detalle de anomalias del equipo bajo demanda ([a0951ec](https://github.com/Zer0x25/portal-control-2.0/commit/a0951eccd4ebc6789fb8af7736859e98f5cce0c6))
+* **frontend:** estandarizar el periodo personalizado con capsula navegable ([d5fe107](https://github.com/Zer0x25/portal-control-2.0/commit/d5fe107461a6d1f9a6047d0e94ff39fd13ffe392))
+* **frontend:** estandarizar selectores primitivos, modales del dashboard y logo de marca ([8e66045](https://github.com/Zer0x25/portal-control-2.0/commit/8e66045835277ce8299ceb1b074417e8be2444de))
+* **frontend:** implementar la lista de personal presente del dashboard ([0cef3c3](https://github.com/Zer0x25/portal-control-2.0/commit/0cef3c3289303a25c762a3cea7d5b76e6c48726f))
+* **frontend:** navegar el periodo en selectores de mes y presets ([caf093d](https://github.com/Zer0x25/portal-control-2.0/commit/caf093dcafebf8e13589ecd50a5409f259c2e93b))
+* **frontend:** unificar el logo del about modal con el brandlogo configurable ([0f947a6](https://github.com/Zer0x25/portal-control-2.0/commit/0f947a65f6f3f62b242e47dad65ad96761c426b5))
+* **storybook:** integracion agentica de Storybook (spec 122) ([f926080](https://github.com/Zer0x25/portal-control-2.0/commit/f92608089f6e3d6784276f80482f2c77f30ea671))
+* **storybook:** integrar story tests agenticos con addon-vitest y addon-mcp ([46eda98](https://github.com/Zer0x25/portal-control-2.0/commit/46eda98a15cb42241a596bb1aded407bd8d8db7c))
+* **storybook:** registrar servidor MCP y nombrar componentes reales en historias ([1413f6b](https://github.com/Zer0x25/portal-control-2.0/commit/1413f6b7018a14a11ee05529cd6ee3d0a620b060))
+
+
+### Bug Fixes
+
+* **a11y:** close semantic panels pilot and responsive layout ([33319f4](https://github.com/Zer0x25/portal-control-2.0/commit/33319f4a00b4d1a5a31d5ec620d8bcd6a4c33be0))
+* **a11y:** complete pilot internal keyboard and responsive checks ([8150fe7](https://github.com/Zer0x25/portal-control-2.0/commit/8150fe7bdd974ee4e0c551c1f86a76a86a72abc9))
+* **a11y:** improve dashboard and logbook interactions ([c693953](https://github.com/Zer0x25/portal-control-2.0/commit/c6939536575203081646673796c36360211d77f9))
+* **a11y:** improve date and month selectors ([96bbb4a](https://github.com/Zer0x25/portal-control-2.0/commit/96bbb4a229fec5c2bd4e26c9a0c49dc430a6c9c7))
+* **a11y:** improve semantic panels and modal accessibility ([0720ac0](https://github.com/Zer0x25/portal-control-2.0/commit/0720ac0fd167218219489f42d41596f7b06b6418))
+* **a11y:** refine responsive and supervisor interactions ([9d70e94](https://github.com/Zer0x25/portal-control-2.0/commit/9d70e948cfb20508a0ae5b6c5f55b5f4fa83d7ce))
+* **a11y:** sync design system manifest, requests view buttons, and pre-pr gates ([388dbf7](https://github.com/Zer0x25/portal-control-2.0/commit/388dbf752c3ebe315ffa0562f9773129c6fdb046))
+* **ci:** detect committed frontend/src changes in story-tests gate ([64d0b73](https://github.com/Zer0x25/portal-control-2.0/commit/64d0b732b9e07f064002ddeb389454dd02ceeddc))
+* **config:** improve smtp tls setup and verification ([e48f50d](https://github.com/Zer0x25/portal-control-2.0/commit/e48f50d67c0a921a4166ce7329d7fb26606425ca))
+* **design:** make responsive containers fluid ([e141951](https://github.com/Zer0x25/portal-control-2.0/commit/e141951024717e6bda3f560275937b1cfecef751))
+* **frontend:** alinear el story id de filterselect con el manifiesto certificado ([ffcb857](https://github.com/Zer0x25/portal-control-2.0/commit/ffcb85785a7131f54125bf848d9185ff8190037c))
+* **frontend:** dar padding al encabezado de mes del selector de fecha ([18e3fc7](https://github.com/Zer0x25/portal-control-2.0/commit/18e3fc7a7a2013cc05ffd70bf521153fe2fedad4))
+* **frontend:** estandarizar desplegables con FilterSelect y color-scheme ([f53141a](https://github.com/Zer0x25/portal-control-2.0/commit/f53141a6a2ed068e9d897382ebb9e582007e0a08))
+* **frontend:** estirar tarjetas y mover el titulo de periodo fuera de la capsula ([7a2efd2](https://github.com/Zer0x25/portal-control-2.0/commit/7a2efd2b0dd429f08df0e46e1c6e0ca071a96e49))
+* **frontend:** render de los selectores de mes en un portal al body ([65d7a24](https://github.com/Zer0x25/portal-control-2.0/commit/65d7a24a31db67d4156bef860c2604bb285afff3))
+* **frontend:** separar el boton de validacion del grid de punto de sellado ([3ef6f8b](https://github.com/Zer0x25/portal-control-2.0/commit/3ef6f8b5a57c0e7974fade028f13c2579c6b66fe))
+* **frontend:** stabilize responsive header and logbook actions ([7c9adde](https://github.com/Zer0x25/portal-control-2.0/commit/7c9addebf5e8b16bda6e60972a41fec4ede9ccc1))
+* **storybook:** registrar addon-vitest solo con STORYBOOK_TESTS=1 ([8613fb2](https://github.com/Zer0x25/portal-control-2.0/commit/8613fb2dc4c94eba1ae17c51657cfc4ca487095e))
+* **supervisor:** improve accessible period filters ([ad7a972](https://github.com/Zer0x25/portal-control-2.0/commit/ad7a972b6e72cef159a0eb77031463b919e0731f))
+* **supervisor:** improve rejection request states ([b2f35ac](https://github.com/Zer0x25/portal-control-2.0/commit/b2f35acb768d53e1a3e46920e4eb6f44d159d7e5))
+* **supervisor:** improve request pagination and states ([ca096f3](https://github.com/Zer0x25/portal-control-2.0/commit/ca096f3d91690a095de6865b32ee1b08026c6334))
+* **supervisor:** integrate correction request updates ([11d39d2](https://github.com/Zer0x25/portal-control-2.0/commit/11d39d2e697a921da0567137fb8469bc43495765))
+* **time-control:** alinear la fila de filtros al ocultar los labels internos de fecha ([fe60287](https://github.com/Zer0x25/portal-control-2.0/commit/fe602879470f1abaf7cdf61e87f30d9571525355))
+* **time-control:** mejorar filtros responsive para distintos tamanos de pantalla ([19c0481](https://github.com/Zer0x25/portal-control-2.0/commit/19c04816a10868281efa2c2be1a1e9385f9008e9))
+* **time-control:** separar fechas y acciones en celdas propias de la grilla ([200c67a](https://github.com/Zer0x25/portal-control-2.0/commit/200c67a20f6596940874cc6817f6628f1e8b0a2b))
+
 ## [8.43.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.43.0...v8.43.1) (2026-11-21)
 
 
