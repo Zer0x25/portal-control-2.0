@@ -105,15 +105,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                     Arquitectura UI
                   </span>
                   <span className="text-xs font-black text-token-text-primary italic">
-                    Antigravity AI
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest">
-                    Core Engine
-                  </span>
-                  <span className="text-xs font-black text-token-text-primary italic">
-                    Google DeepMind
+                    Zer0x DevOps
                   </span>
                 </div>
               </div>
