@@ -1164,6 +1164,7 @@
                   "errors"
                 ]
               },
+              "createdAt": { "type": "string", "format": "date-time" },
               "errorSummary": { "type": "string", "nullable": true }
             },
             "required": ["id", "status", "config", "progress"]

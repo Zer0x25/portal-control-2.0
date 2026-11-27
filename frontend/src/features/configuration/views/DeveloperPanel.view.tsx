@@ -38,8 +38,11 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
     phase2Job,
     phase2Logs,
     pollError,
+    resumablePhase2Job,
+    isPhase1Running,
     handleSeedData,
     handleStartPhase2,
+    handleResumePendingPhase2,
     handlePausePhase2,
     handleResumePhase2,
     handleStopPhase2,
@@ -110,6 +113,16 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
                   <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" /> Ver Progreso Activo
                 </Button>
               )}
+              {resumablePhase2Job && (
+                <Button
+                  role="menuitem"
+                  onClick={handleResumePendingPhase2}
+                  size="sm"
+                  className="w-full h-11 rounded-2xl bg-token-status-success hover:opacity-90 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-status-success/20 text-token-text-onAccent"
+                >
+                  <ArrowPathIcon className="w-4 h-4 mr-2" /> Retomar Fase 2
+                </Button>
+              )}
               <Button
                 role="menuitem"
                 onClick={() => {
@@ -124,8 +137,9 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
               <Button
                 role="menuitem"
                 onClick={() => setIsSeedingOptionsOpen(true)}
+                disabled={isPhase1Running}
                 size="sm"
-                className="w-full h-11 rounded-2xl bg-linear-to-r from-token-status-licencia-medica to-token-status-colacion border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-status-licencia-medica/20 text-token-text-onAccent"
+                className="w-full h-11 rounded-2xl bg-linear-to-r from-token-status-licencia-medica to-token-status-colacion border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-status-licencia-medica/20 text-token-text-onAccent disabled:opacity-60"
               >
                 <SparklesIcon className="w-4 h-4 mr-2" /> Seeder por Fases
               </Button>

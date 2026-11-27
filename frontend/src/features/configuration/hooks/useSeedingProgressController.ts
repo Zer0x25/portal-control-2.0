@@ -1,6 +1,7 @@
 import React from "react";
 import type { SeedPhase2Job } from "../../../services/seedingService";
 import { getDBInstance } from "../../../utils/indexedDB";
+import { purgePersistedQueryCache } from "../../../lib/queryCache";
 import { logger } from "../../../utils/logger";
 import { useSeedingProgressHealth } from "./useSeedingProgressHealth";
 
@@ -114,6 +115,13 @@ export const useSeedingProgressController = ({
       await Promise.all(Array.from(db.objectStoreNames).map((storeName) => db.clear(storeName)));
     } catch (e) {
       logger.warn("Error clearing IndexedDB:", e);
+    }
+    // El cache persistido de TanStack Query (IndexedDB propio) guarda la
+    // data pre-seed: sin purgarlo, la recarga vuelve a servir datos viejos.
+    try {
+      await purgePersistedQueryCache();
+    } catch (e) {
+      logger.warn("Error purgando el cache persistido de queries:", e);
     }
     localStorage.removeItem("lastSyncTime");
     sessionStorage.clear();

@@ -26,6 +26,8 @@ export interface SeedPhase2Job {
     sealedRecords: number;
     errors: number;
   };
+  /** Fecha de creacion del job (ISO); usada para decidir si es retomable. */
+  createdAt?: string;
   errorSummary?: string;
 }
 

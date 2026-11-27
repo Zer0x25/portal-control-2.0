@@ -5902,6 +5902,8 @@ export interface components {
           sealedRecords: number;
           errors: number;
         };
+        /** Format: date-time */
+        createdAt?: string;
         errorSummary?: string | null;
       } | null;
     };

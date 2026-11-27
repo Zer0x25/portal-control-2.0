@@ -5,10 +5,11 @@ import { useSeedingProgressController } from "../../../features/configuration/ho
 import type { UseSeedingProgressControllerOptions } from "../../../features/configuration/hooks/useSeedingProgressController";
 import type { SeedPhase2Job } from "../../../services/seedingService";
 
-const { getHealthMock, getDBInstanceMock, clearMock } = vi.hoisted(() => ({
+const { getHealthMock, getDBInstanceMock, clearMock, purgeMock } = vi.hoisted(() => ({
   getHealthMock: vi.fn(),
   getDBInstanceMock: vi.fn(),
   clearMock: vi.fn(),
+  purgeMock: vi.fn(),
 }));
 
 // El probe de salud es observabilidad: se mockea con una promesa eterna para
@@ -23,6 +24,12 @@ vi.mock("../../../services/healthService", () => ({
 // `initDB`): se mockea con un DB falso de un solo store.
 vi.mock("../../../utils/indexedDB", () => ({
   getDBInstance: (...args: unknown[]) => getDBInstanceMock(...args),
+}));
+
+// El cache persistido de TanStack Query (IndexedDB propio) tambien se purga
+// en `handleReload`: sin esto la recarga sirve la data pre-seed.
+vi.mock("../../../lib/queryCache", () => ({
+  purgePersistedQueryCache: (...args: unknown[]) => purgeMock(...args),
 }));
 
 /** Job de fase 2 con defaults neutros; cada test sobrescribe lo que usa. */
@@ -326,6 +333,8 @@ describe("useSeedingProgressController", () => {
       });
 
       expect(clearMock).toHaveBeenCalledWith("store1");
+      // El cache persistido de queries (data pre-seed) tambien se purga.
+      expect(purgeMock).toHaveBeenCalledTimes(1);
       expect(localStorage.getItem("lastSyncTime")).toBeNull();
       expect(sessionStorage.length).toBe(0);
       expect(window.location.href).toBe("/");
@@ -333,6 +342,19 @@ describe("useSeedingProgressController", () => {
 
     it("no interrumpe la recarga si IndexedDB falla", async () => {
       getDBInstanceMock.mockRejectedValueOnce(new Error("IndexedDB corrupta"));
+
+      const { result } = renderHook(() => useSeedingProgressController(baseOptions()));
+
+      await act(async () => {
+        await result.current.handleReload();
+      });
+
+      expect(localStorage.getItem("lastSyncTime")).toBeNull();
+      expect(window.location.href).toBe("/");
+    });
+
+    it("no interrumpe la recarga si la purga del cache de queries falla", async () => {
+      purgeMock.mockRejectedValueOnce(new Error("IndexedDB de queries corrupta"));
 
       const { result } = renderHook(() => useSeedingProgressController(baseOptions()));
 

@@ -188,6 +188,7 @@ export const SeedPhase2StatusSchema = z
           sealedRecords: z.number(),
           errors: z.number(),
         }),
+        createdAt: z.string().datetime().optional(),
         errorSummary: z.string().nullable().optional(),
       })
       .nullable(),
