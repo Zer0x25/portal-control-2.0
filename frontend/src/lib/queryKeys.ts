@@ -160,6 +160,8 @@ export const queryKeys = {
   dashboard: resource("dashboard", () => ["dashboard"] as const),
   /** Resumen del dashboard. */
   dashboardOverview: resource("dashboard", () => ["dashboard", "overview"] as const),
+  /** Detalle de anomalías del equipo (bajo demanda, modal del dashboard). */
+  dashboardAnomalies: resource("dashboard", () => ["dashboard", "anomalies"] as const),
   /** Planificacion diaria del dashboard. */
   dashboardDailyPlanning: resource("dashboard", () => ["dashboard", "dailyPlanning"] as const),
   /** Actividad reciente del dashboard. */

@@ -27,6 +27,7 @@
     "src/components/ui/DatePicker.tsx",
     "src/components/ui/DatePickerDialog.tsx",
     "src/components/ui/EmptyState.tsx",
+    "src/components/ui/FilterSelect.tsx",
     "src/components/ui/IconBox.tsx",
     "src/components/ui/IndustrialIndicator.tsx",
     "src/components/ui/Input.tsx",

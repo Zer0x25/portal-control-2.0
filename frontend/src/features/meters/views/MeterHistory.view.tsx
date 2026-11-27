@@ -4,6 +4,7 @@ import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import SingleMeterInputModal from "../components/SingleMeterInputModal.container";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import { ChevronRightIcon, ArrowUturnLeftIcon } from "../../../components/ui/icons";
 import { Z } from "../../../constants/zScale";
 import type { MeterHistoryController } from "../hooks/useMeterHistoryController";
@@ -277,18 +278,16 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
               initialDate={filters.endDate}
             />
           </div>
-          <select
+          <FilterSelect
+            label="Medidor"
+            aria-label="Filtrar por medidor"
             value={filters.meterId}
             onChange={(e) => setFilters((f) => ({ ...f, meterId: e.target.value }))}
-            className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-          >
-            <option value="">Todos los medidores</option>
-            {meterConfigs.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Todos los Medidores" },
+              ...meterConfigs.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
           <Button
             onClick={handleClearFilters}
             variant="secondary"

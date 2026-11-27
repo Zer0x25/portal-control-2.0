@@ -62,7 +62,8 @@ Prohibidas las clases numéricas `z-10`, `z-50`, etc. Usar siempre `Z.<nivel>`:
 | Necesidad | Primitiva oficial | Notas clave |
 | :--- | :--- | :--- |
 | Acciones | `Button.tsx` | Variantes `primary`, `secondary`, `danger`, `ghost`, `none` |
-| Campos de formulario | `Input.tsx`, `Select.tsx`, `Textarea.tsx`, `Checkbox.tsx`, `Switch.tsx` | `id` garantizado vía `useId()`, `aria-invalid` y `aria-describedby` automáticos |
+| Campos de formulario | `Input.tsx`, `Select.tsx`, `FilterSelect.tsx`, `Textarea.tsx`, `Checkbox.tsx`, `Switch.tsx` | `id` garantizado vía `useId()`, `aria-invalid` y `aria-describedby` automáticos |
+| Desplegables de filtrado | `FilterSelect.tsx` | Único `<select>` del sistema: chevron propio, icono de ancla opcional, 44 px táctiles, tokens semánticos |
 | Contenedores y layout | `Container.tsx`, `Card.tsx`, `PageHeader.tsx`, `IconBox.tsx` | Radios sobrios (`rounded-sm` / `rounded-md` / `rounded-lg`); prohibido `rounded-3xl`/`4xl` en tablas desktop |
 | Navegación por pestañas | `TabNav.tsx` | Única implementación `role="tablist"` con navegación por teclado APG |
 | Modales y confirmación | `CinematicModal.tsx`, `ConfirmationModal.tsx` | CSS-first con focus trap, retorno de foco y cierre con `Escape` |

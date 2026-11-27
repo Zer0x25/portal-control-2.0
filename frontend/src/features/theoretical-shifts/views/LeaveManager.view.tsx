@@ -19,6 +19,7 @@ import {
   EyeIcon,
 } from "../../../components/ui/icons/index";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import { LEAVE_TYPES } from "../../../utils/mappings";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import EmptyState from "../../../components/ui/EmptyState";
@@ -219,46 +220,18 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="leave-type"
-                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
-                    >
-                      Tipo
-                    </label>
-                    <select
+                    <FilterSelect
                       id="leave-type"
+                      label="Tipo"
                       value={formValues.type}
                       onChange={(e) => setValue("type", e.target.value)}
                       disabled={!!editingLeave}
-                      aria-invalid={getError("type") ? "true" : undefined}
-                      aria-describedby={getError("type") ? "leave-type-error" : undefined}
-                      className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option
-                        value=""
-                        disabled
-                        className="bg-token-surface-card text-token-text-tertiary"
-                      >
-                        Seleccione una opción
-                      </option>
-                      {LEAVE_TYPES.map((t) => (
-                        <option
-                          key={t}
-                          value={t}
-                          className="bg-token-surface-card text-token-text-primary"
-                        >
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                    {getError("type") && (
-                      <p
-                        id="leave-type-error"
-                        className="mt-2 pl-1 text-xs font-semibold text-token-status-error"
-                      >
-                        {getError("type")}
-                      </p>
-                    )}
+                      error={getError("type")}
+                      options={[
+                        { value: "", label: "Seleccione una opción", disabled: true },
+                        ...LEAVE_TYPES.map((t) => ({ value: t, label: t })),
+                      ]}
+                    />
                   </div>
                 </div>
 
@@ -424,20 +397,18 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
         </div>
 
         <div className="relative w-full md:w-64">
-          <FunnelIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary" />
-          <select
+          <FilterSelect
+            id="leave-type-filter"
+            label="Filtrar por Tipo de Permiso"
+            icon={<FunnelIcon className="w-4 h-4" />}
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             aria-label="Filtrar por tipo de permiso"
-            className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-subtle rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm font-medium"
-          >
-            <option value="">Tipo: Todos</option>
-            {LEAVE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Tipo: Todos" },
+              ...LEAVE_TYPES.map((t) => ({ value: t, label: t })),
+            ]}
+          />
         </div>
 
         <div className="flex items-center gap-3 px-6 h-[50px] bg-token-surface-card border border-token-border-subtle rounded-xl whitespace-nowrap w-full md:w-auto">

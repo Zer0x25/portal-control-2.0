@@ -12,6 +12,12 @@ interface AboutModalViewProps {
   showMonkey: boolean;
   onCloseMonkey: () => void;
   onLogoClick: () => void;
+  /**
+   * Logo de marca (spec 027): el mismo BrandLogo configurable del login.
+   * La vista es presentacional pura, asi que el elemento lo provee el
+   * container.
+   */
+  logo?: React.ReactNode;
 }
 
 const AboutModalView: React.FC<AboutModalViewProps> = ({
@@ -20,6 +26,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
   showMonkey,
   onCloseMonkey,
   onLogoClick,
+  logo,
 }) => {
   if (!isOpen) {
     return null;
@@ -51,11 +58,9 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           <div className="text-center space-y-4 relative">
             <div
               onClick={onLogoClick}
-              className="w-20 h-20 bg-token-accent-brand rounded-2xl mx-auto flex items-center justify-center shadow-22xl group hover:scale-110 transition-transform duration-500 cursor-pointer"
+              className="mx-auto flex items-center justify-center group hover:scale-110 transition-transform duration-500 cursor-pointer"
             >
-              <span className="text-token-text-onAccent font-black text-4xl italic tracking-tighter">
-                P
-              </span>
+              {logo}
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-black text-token-text-primary tracking-tighter italic">

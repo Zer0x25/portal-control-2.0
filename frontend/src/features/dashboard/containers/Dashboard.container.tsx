@@ -1,15 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
-import { AttendanceRecord, DailyTimeRecord, MissingClockOutStatus } from "../../../types/index";
+import {
+  AttendanceRecord,
+  DailyTimeRecord,
+  MissingClockOutStatus,
+  TeamAnomalyRecord,
+} from "../../../types/index";
 import { getContractClockingStatus } from "../../../utils/mappings";
 import { useTimeRecordActions } from "../../../hooks/useTimeRecordActions";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
+import { useToasts } from "../../../hooks/useToasts";
+import { timeRecordService } from "../../../services/timeRecordService";
 
 import { useDashboardModalController } from "../hooks/useDashboardModalController";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useTeamAnomaliesQuery } from "../../../hooks/queries/useDashboardQueries";
 
 import DashboardView from "../views/Dashboard.view";
 import { WIDGET_REGISTRY } from "../components/widgetRegistry";
@@ -30,6 +38,8 @@ const DashboardContainer: React.FC = () => {
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { clockOut, startBreak, endBreak } = useTimeRecordActions();
+  const { addToast } = useToasts();
+  const [isResolvingPresentRecord, setIsResolvingPresentRecord] = useState(false);
 
   // Extract Logic to Hooks (Golden Path)
   const { actions, editingRecordInfo, hasUnreadNotes, isQuickNotesModalOpen, modals } =
@@ -41,6 +51,7 @@ const DashboardContainer: React.FC = () => {
     isLoadingOverview,
     teamStatus,
     unscheduledPresent,
+    employeeStatuses,
   } = useDashboardData();
 
   const getResponsibleDisplayName = (username: string): string => {
@@ -60,15 +71,36 @@ const DashboardContainer: React.FC = () => {
     }
   };
 
-  const handleAnomalyRecordDoubleClick = (record: DailyTimeRecord) => {
+  // Fetch bajo demanda: el detalle de anomalías solo se carga cuando el
+  // modal está abierto (el overview mantiene el conteo always-on).
+  const teamAnomaliesQuery = useTeamAnomaliesQuery(modals.isAnomaliesModalOpen);
+
+  const handleAnomalyRecordDoubleClick = (record: TeamAnomalyRecord) => {
     if (record) {
-      actions.openQuickActionModal(record);
+      actions.openQuickActionModal(record as DailyTimeRecord);
     }
   };
 
-  const handlePresentEmployeeDoubleClick = (record: DailyTimeRecord) => {
-    if (record) {
-      actions.openQuickActionModal(record);
+  const handlePresentEmployeeDoubleClick = async (employeeId: string, employeeName: string) => {
+    // El overview esbelto solo proyecta id/nombre/cargo/estado: el registro
+    // completo para el menú de acción rápida se resuelve bajo demanda.
+    setIsResolvingPresentRecord(true);
+    try {
+      const result = await timeRecordService.getAll({
+        page: 1,
+        pageSize: 1,
+        filters: { employeeId },
+      });
+      const record = result.data[0];
+      if (record) {
+        actions.openQuickActionModal(record);
+      } else {
+        addToast(`No se encontró un registro de jornada para ${employeeName}`, "warning");
+      }
+    } catch {
+      addToast(`No se pudo cargar el registro de ${employeeName}`, "error");
+    } finally {
+      setIsResolvingPresentRecord(false);
     }
   };
 
@@ -185,6 +217,15 @@ const DashboardContainer: React.FC = () => {
       isLoadingOverview={isLoadingOverview}
       teamStatus={teamStatus}
       unscheduledPresent={unscheduledPresent}
+      employeeStatuses={employeeStatuses}
+      isResolvingPresentRecord={isResolvingPresentRecord}
+      teamAnomalies={{
+        anomalies: teamAnomaliesQuery.data?.anomalies ?? [],
+        count: teamAnomaliesQuery.data?.count ?? teamStatus.anomaliesCount,
+        isLoading: teamAnomaliesQuery.isLoading,
+        isError: teamAnomaliesQuery.isError,
+        refetch: teamAnomaliesQuery.refetch,
+      }}
       visibleWidgets={visibleWidgets}
       widgetProps={widgetProps}
       quickActionModal={quickActionModal}

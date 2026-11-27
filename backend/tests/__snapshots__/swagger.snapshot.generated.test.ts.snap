@@ -3370,6 +3370,28 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "TeamAnomalies": {
+        "properties": {
+          "anomalies": {
+            "items": {
+              "nullable": true,
+            },
+            "type": "array",
+          },
+          "count": {
+            "type": "integer",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "count",
+          "anomalies",
+          "timestamp",
+        ],
+        "type": "object",
+      },
       "TimeRecordListResponse": {
         "properties": {
           "data": {
@@ -6184,6 +6206,31 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "summary": "Previsualizar contenido de un archivo Excel",
         "tags": [
           "Import",
+        ],
+      },
+    },
+    "/api/kpis/anomalies": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamAnomalies",
+                },
+              },
+            },
+            "description": "Detalle de anomalías bajo demanda (el overview solo envía el conteo)",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener el detalle de anomalías del equipo",
+        "tags": [
+          "KPIs",
         ],
       },
     },

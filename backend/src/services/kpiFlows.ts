@@ -11,6 +11,7 @@ export const kpiFlows = createKpiFlows({
     detailed: (input) => kpiService.getDetailedReport(input),
     overview: () => kpiService.getDashboardOverview(),
     daily: () => kpiService.getDailyPlanningSummary(),
+    anomalies: () => kpiService.getAnomalyRecords(),
   },
   dates: {
     exclusive: (startDate, endDate) => fromInclusiveRange({ startDate, endDate }).endDateExclusive,

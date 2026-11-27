@@ -75,7 +75,8 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               className="group flex items-center justify-center transition-transform active:scale-95"
               aria-label="Abrir Menú"
             >
-              <div className="w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical">
+              {/* Logo cuadrado: solo móvil/tablet; en escritorio ya se muestra la marca de texto en lg. */}
+              <div className="w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical lg:hidden">
                 {APP_TITLE ? APP_TITLE.charAt(0) : "P"}
               </div>
             </button>

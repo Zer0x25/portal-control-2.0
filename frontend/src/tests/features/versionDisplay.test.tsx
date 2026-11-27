@@ -65,10 +65,12 @@ describe("version display", () => {
         showMonkey={false}
         onCloseMonkey={vi.fn()}
         onLogoClick={vi.fn()}
+        logo={<span data-testid="about-logo" />}
       />,
     );
 
     expect(screen.getByText(`Portal Modernizado v${BUILD_VERSION}`)).toBeInTheDocument();
     expect(screen.getByText(BUILD_VERSION)).toBeInTheDocument();
+    expect(screen.getByTestId("about-logo")).toBeInTheDocument();
   });
 });

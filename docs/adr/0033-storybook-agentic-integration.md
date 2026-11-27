@@ -152,6 +152,17 @@ Negativas / costos aceptados:
 
 ## Líneas de implementación verificadas (2026-11-26)
 
+- **Registro condicional del addon-vitest (ajuste posterior, 2026-11-26)**:
+  el addon arranca un Vitest dentro del propio dev server filtrado por el
+  proyecto `storybook`, que solo existe con `STORYBOOK_TESTS=1`. Registrado
+  incondicionalmente, el `npm run storybook` normal moría en cada arranque
+  con "Component tests crashed — No projects were found" (error fatal del
+  panel). Se movió el registro en `frontend/.storybook/main.ts` bajo la
+  misma flag. Verificado: dev server normal sin panel ni error; con la
+  flag el panel vive y `storybook tools test run` (CLI, con la flag
+  exportada) pasa; el MCP oculta `test-run` con `testSupported: false`
+  cuando el addon no está; `storybook:build` y `test:storybook` no
+  dependen del registro.
 - Primer run de calibración: **54 fallas / 228 tests**. Triage: **12
   violaciones a11y reales corregidas** (aria-dialog-name en
   RecordHistory/Import/ShiftHandover vía `ariaLabelledBy`; button-name en

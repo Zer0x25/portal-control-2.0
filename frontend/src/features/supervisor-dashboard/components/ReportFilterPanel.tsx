@@ -1,14 +1,25 @@
 import React, { useState, useEffect, FC } from "react";
+import { addMonths } from "date-fns";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
-import { getBusinessDateRangePreset, getChileDateISO } from "../../../utils/dateUtils";
+import {
+  compareBusinessDate,
+  addBusinessDaysChile,
+  getBusinessDateRangePreset,
+  getChileDateISO,
+  parseDateAsUTC,
+} from "../../../utils/dateUtils";
+import { isBusinessDateCL } from "../../../utils/timePolicy";
 import {
   FunnelIcon,
   UsersIcon,
   MapPinIcon,
   DocumentTextIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "../../../components/ui/icons/index";
 import AuditMonthSelector from "../../../components/ui/AuditMonthSelector";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface ReportFilterPanelProps {
@@ -40,6 +51,9 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
   const [customStartDate, setCustomStartDate] = useState<string>(getChileDateISO());
   const [customEndDate, setCustomEndDate] = useState<string>(getChileDateISO());
+  // Ancla editable de los presets (trimestre/semestre/año): permite navegar
+  // entre periodos sin quedar anclado al actual.
+  const [presetAnchor, setPresetAnchor] = useState<Date>(() => new Date(businessNow));
 
   const { startDateISO, endDateISO } = (() => {
     if (periodMode === "custom") {
@@ -52,17 +66,17 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
     switch (periodMode) {
       case "quarter":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("quarter", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("quarter", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       case "semester":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("semester", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("semester", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       case "year":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("year", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("year", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       default:
@@ -72,6 +86,59 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
         })();
     }
   })();
+
+  const presetStepMonths = periodMode === "year" ? 12 : periodMode === "semester" ? 6 : 3;
+
+  const shiftPresetAnchor = (delta: number) => {
+    const shifted = addMonths(presetAnchor, delta * presetStepMonths);
+    // El ancla arranca en el periodo en curso y solo puede retroceder.
+    if (shifted > businessNow) return;
+    setPresetAnchor(shifted);
+  };
+
+  // El botón "Siguiente" se desactiva al llegar al periodo en curso.
+  const presetShiftDisabled =
+    periodMode !== "month" && addMonths(presetAnchor, presetStepMonths) > businessNow;
+
+  const presetLabel = (() => {
+    if (periodMode === "year") return `Año ${presetAnchor.getFullYear()}`;
+    if (periodMode === "semester") {
+      return `Semestre ${presetAnchor.getMonth() < 6 ? "1" : "2"} ${presetAnchor.getFullYear()}`;
+    }
+    return `Trimestre ${Math.floor(presetAnchor.getMonth() / 3) + 1} ${presetAnchor.getFullYear()}`;
+  })();
+
+  // Navegación del rango personalizado: desplaza inicio y término por la
+  // duración inclusive del rango (mínimo 1 día), igual que los presets
+  // avanzan por trimestres/semestres/años completos sin superposiciones.
+  const customRangeDays = (() => {
+    const start = parseDateAsUTC(customStartDate).getTime();
+    const end = parseDateAsUTC(customEndDate).getTime();
+    if (Number.isNaN(start) || Number.isNaN(end) || end < start) return 1;
+    return Math.max(Math.round((end - start) / 86_400_000) + 1, 1);
+  })();
+
+  const shiftCustomRange = (delta: number) => {
+    if (!isBusinessDateCL(customStartDate) || !isBusinessDateCL(customEndDate)) return;
+    const shiftDays = customRangeDays * delta;
+    const nextStart = addBusinessDaysChile(customStartDate, shiftDays);
+    const nextEnd = addBusinessDaysChile(customEndDate, shiftDays);
+    // El termino del rango nunca avanza mas alla del dia en curso.
+    if (compareBusinessDate(nextEnd, getChileDateISO(businessNow)) > 0) return;
+    setCustomStartDate(nextStart);
+    setCustomEndDate(nextEnd);
+  };
+
+  // La flecha "Siguiente" se desactiva cuando el proximo salto pasaria el
+  // dia en curso (el rango puede terminar en el dia actual, igual que el
+  // preset del mes en curso termina hoy).
+  const customNextDisabled =
+    periodMode === "custom" &&
+    isBusinessDateCL(customEndDate) &&
+    compareBusinessDate(
+      addBusinessDaysChile(customEndDate, customRangeDays),
+      getChileDateISO(businessNow),
+    ) > 0;
 
   useEffect(() => {
     onFiltersChange({
@@ -118,7 +185,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
     );
 
   return (
-    <div className="bg-token-surface-card p-6 md:p-8 rounded-sm border border-token-border-technical shadow-sm space-y-8">
+    <div className="w-full min-w-0 bg-token-surface-card p-6 md:p-8 rounded-sm border border-token-border-technical shadow-sm space-y-8">
       {/* Search Header and Period Presets */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-token-border-subtle pb-6 gap-6">
         <div className="space-y-1">
@@ -159,127 +226,128 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           {periodMode === "month" ? (
             <AuditMonthSelector currentDate={activeDate} onChange={setActiveDate} />
           ) : periodMode === "custom" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
-              <div className="min-w-0 space-y-1.5">
-                <label
-                  htmlFor="report-custom-start"
-                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+            <div className="flex flex-col min-w-[260px] animate-in fade-in slide-in-from-left-4 duration-300">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 ml-1">
+                Periodo de Consulta
+              </p>
+              <div className="flex items-center gap-1 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => shiftCustomRange(-1)}
+                  title="Anterior"
+                  className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
                 >
-                  Inicio
-                </label>
+                  <ChevronLeftIcon className="w-3.5 h-3.5" />
+                </button>
+                {/* Igual que en TimeRecordFilters: el titulo de la capsula
+                    ("Periodo de Consulta") describe el grupo y las etiquetas
+                    quedan accesibles via aria-label, sin apilar una segunda
+                    linea de etiquetas dentro de la capsula. */}
                 <input
                   id="report-custom-start"
                   type="date"
                   value={customStartDate}
+                  max={customEndDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
+                  aria-label="Fecha de inicio del periodo personalizado"
+                  className="min-w-0 flex-1 basis-0 h-[30px] bg-transparent border-none rounded-sm px-2 text-[12px] font-bold text-token-text-primary hover:bg-token-surface-active focus:ring-1 focus:ring-token-accent-brand outline-none transition-all"
                 />
-              </div>
-              <div className="min-w-0 space-y-1.5">
-                <label
-                  htmlFor="report-custom-end"
-                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-token-text-tertiary text-[10px] font-black uppercase tracking-widest"
                 >
-                  Término
-                </label>
+                  a
+                </span>
                 <input
                   id="report-custom-end"
                   type="date"
                   value={customEndDate}
+                  min={customStartDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
+                  aria-label="Fecha de término del periodo personalizado"
+                  className="min-w-0 flex-1 basis-0 h-[30px] bg-transparent border-none rounded-sm px-2 text-[12px] font-bold text-token-text-primary hover:bg-token-surface-active focus:ring-1 focus:ring-token-accent-brand outline-none transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => shiftCustomRange(1)}
+                  disabled={customNextDisabled}
+                  title="Siguiente"
+                  className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
+                >
+                  <ChevronRightIcon className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           ) : (
-            <div className="bg-token-accent-brand/3 border border-token-accent-brand/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
-              <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest opacity-60">
-                Segmento Automático
-              </span>
-              <span className="text-[13px] font-bold text-token-text-primary uppercase mt-1">
-                {periodMode === "quarter" && "Trimestre Actual"}
-                {periodMode === "semester" && "Semestre Actual"}
-                {periodMode === "year" && `Ciclo Anual ${businessNow.getFullYear()}`}
-              </span>
+            <div className="flex flex-col min-w-[160px]">
+              <p
+                aria-live="polite"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 ml-1"
+              >
+                Periodo de Consulta
+              </p>
+              <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => shiftPresetAnchor(-1)}
+                  title="Anterior"
+                  className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+                >
+                  <ChevronLeftIcon className="w-3.5 h-3.5" />
+                </button>
+                <p className="flex-1 px-2 text-center text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
+                  {presetLabel}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => shiftPresetAnchor(1)}
+                  disabled={presetShiftDisabled}
+                  title="Siguiente"
+                  className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
+                >
+                  <ChevronRightIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         <div className="grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-6">
-          <div className="relative group">
-            <label
-              htmlFor="report-workday-type"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Tipo de Jornada
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <FunnelIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="report-workday-type"
-              value={selectedWorkdayType}
-              onChange={(e) => setSelectedWorkdayType(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
-            >
-              <option value="">Todas las Jornadas</option>
-              {availableWorkdayTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="report-workday-type"
+            label="Tipo de Jornada"
+            icon={<FunnelIcon className="w-4 h-4" />}
+            value={selectedWorkdayType}
+            onChange={(e) => setSelectedWorkdayType(e.target.value)}
+            options={[
+              { value: "", label: "Todas las Jornadas" },
+              ...availableWorkdayTypes.map((t) => ({ value: t, label: t })),
+            ]}
+          />
 
-          <div className="relative group">
-            <label
-              htmlFor="report-area"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Ubicación / Área
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <MapPinIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="report-area"
-              value={selectedArea}
-              onChange={(e) => setSelectedArea(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
-            >
-              <option value="">Todas las Áreas</option>
-              {availableAreas.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="report-area"
+            label="Ubicación / Área"
+            icon={<MapPinIcon className="w-4 h-4" />}
+            value={selectedArea}
+            onChange={(e) => setSelectedArea(e.target.value)}
+            options={[
+              { value: "", label: "Todas las Áreas" },
+              ...availableAreas.map((a) => ({ value: a, label: a })),
+            ]}
+          />
 
-          <div className="relative group">
-            <label
-              htmlFor="report-employee"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Colaborador Específico
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <UsersIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="report-employee"
-              value={selectedEmployeeId}
-              onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
-            >
-              <option value="">Resumen de Equipo (General)</option>
-              {employeesForEmployeeDropdown.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="report-employee"
+            label="Colaborador Específico"
+            icon={<UsersIcon className="w-4 h-4" />}
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            options={[
+              { value: "", label: "Resumen de Equipo (General)" },
+              ...employeesForEmployeeDropdown.map((e) => ({ value: e.id, label: e.name })),
+            ]}
+          />
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { ChevronDownIcon } from "../../../components/ui/icons/index";
+import FilterSelect from "../../../components/ui/FilterSelect";
 
 import { CATEGORY_GROUPS, SEVERITIES } from "../../../constants/audit";
 
@@ -79,46 +80,39 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Category/Domain Filter */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
-                  📂 Dominio
-                </label>
-                <div className="relative group/select">
-                  <select
-                    value={
-                      filters.categories.length === 0
-                        ? "ALL"
-                        : CATEGORY_GROUPS.find((g) =>
-                            g.categories.every((c) => filters.categories.includes(c.id)),
-                          )?.name || "CUSTOM"
-                    }
-                    aria-label="Dominio de auditoría"
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === "ALL") {
-                        setFilters((prev) => ({ ...prev, categories: [] }));
-                      } else {
-                        const group = CATEGORY_GROUPS.find((g) => g.name === val);
-                        if (group) {
-                          setFilters((prev) => ({
-                            ...prev,
-                            categories: group.categories.map((c) => c.id),
-                          }));
-                        }
+                <FilterSelect
+                  id="audit-domain-filter"
+                  label="Dominio"
+                  value={
+                    filters.categories.length === 0
+                      ? "ALL"
+                      : (CATEGORY_GROUPS.find((g) =>
+                          g.categories.every((c) => filters.categories.includes(c.id)),
+                        )?.name ?? "CUSTOM")
+                  }
+                  aria-label="Dominio de auditoría"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "ALL") {
+                      setFilters((prev) => ({ ...prev, categories: [] }));
+                    } else {
+                      const group = CATEGORY_GROUPS.find((g) => g.name === val);
+                      if (group) {
+                        setFilters((prev) => ({
+                          ...prev,
+                          categories: group.categories.map((c) => c.id),
+                        }));
                       }
-                    }}
-                    className="w-full h-12 pl-4 pr-10 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-semibold text-token-text-primary appearance-none cursor-pointer focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus group-hover/select:border-token-border-focus transition-all"
-                  >
-                    <option value="ALL">Todos</option>
-                    {CATEGORY_GROUPS.map((group) => (
-                      <option key={group.name} value={group.name}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-token-text-tertiary">
-                    <ChevronDownIcon className="w-5 h-5" />
-                  </div>
-                </div>
+                    }
+                  }}
+                  options={[
+                    { value: "ALL", label: "Todos" },
+                    ...CATEGORY_GROUPS.map((group) => ({
+                      value: group.name,
+                      label: group.name,
+                    })),
+                  ]}
+                />
               </div>
 
               {/* Severity Filter */}

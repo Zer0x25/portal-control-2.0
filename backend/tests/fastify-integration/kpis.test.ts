@@ -25,6 +25,7 @@ const routes = [
   ["POST", "/api/kpis/summary"],
   ["POST", "/api/kpis/detailed-report"],
   ["GET", "/api/kpis/overview"],
+  ["GET", "/api/kpis/anomalies"],
   ["GET", "/api/kpis/daily-planning"],
 ] as const;
 async function seedRecord(date: string) {
@@ -415,6 +416,41 @@ describe("Spec 018 KPI on Fastify", () => {
     // Legacy explicit Ausente normalizes to 'Ausencia no justificada', so the aggregator omits it.
     expect(JSON.stringify(summary.body)).not.toContain("secret-pin");
     expect((await http("GET", "/api/kpis/daily-planning")).body.activeCount).toBe(1);
+  });
+  it("serves anomaly detail on demand consistent with the overview count", async () => {
+    // Unemployed today with an assigned shift yesterday: missing-mark anomaly
+    // (registro virtual) + record "Ausente" today does not add a second one.
+    await prismaDirect.employee.create({ data: employee });
+    await prismaDirect.timeRecord.create({
+      data: {
+        employeeId: employee.id,
+        employeeName: employee.name,
+        date: today(),
+        status: "Ausente",
+        scheduledHours: 8,
+      },
+    });
+
+    const [overview, detail] = await Promise.all([
+      http("GET", "/api/kpis/overview"),
+      http("GET", "/api/kpis/anomalies"),
+    ]);
+
+    expect(overview.status).toBe(200);
+    expect(detail.status).toBe(200);
+    // El conteo del overview y el detalle bajo demanda comparten la misma lógica.
+    expect(detail.body.count).toBe(overview.body.teamStatus.anomaliesCount);
+    expect(Array.isArray(detail.body.anomalies)).toBe(true);
+    expect(detail.body.anomalies).toHaveLength(overview.body.teamStatus.anomaliesCount);
+    expect(typeof detail.body.timestamp).toBe("string");
+    if (detail.body.anomalies.length > 0) {
+      // Sin PII sensible en el detalle (mismo criterio del overview).
+      expect(JSON.stringify(detail.body)).not.toContain("secret-pin");
+      for (const anomaly of detail.body.anomalies) {
+        expect(typeof anomaly.id).toBe("string");
+        expect(typeof anomaly.employeeId).toBe("string");
+      }
+    }
   });
   it.each(["missing", "vacation", "holiday", "recorded"])(
     "evaluates Chile yesterday with its own context (%s)",

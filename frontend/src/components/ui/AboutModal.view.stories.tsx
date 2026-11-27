@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import BrandLogo from "./BrandLogo";
 import AboutModal from "./AboutModal.view";
 
 const meta = {
@@ -11,6 +12,7 @@ const meta = {
     showMonkey: false,
     onCloseMonkey: () => undefined,
     onLogoClick: () => undefined,
+    logo: <BrandLogo className="h-20 w-auto rounded-2xl shadow-2xl mx-auto" />,
   },
   argTypes: {
     isOpen: { control: "boolean" },

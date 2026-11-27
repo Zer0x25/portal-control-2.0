@@ -164,7 +164,7 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
   return (
     <div className={className}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="px-3 pt-3 flex items-center justify-between mb-3">
         <div className="flex flex-col">
           <span className="text-base font-black text-token-text-primary capitalize leading-tight">
             {format(currentMonth, "MMMM", { locale: es })}
@@ -198,7 +198,7 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
       </div>
 
       {/* Calendar grid */}
-      <div className="p-3">
+      <div className="px-3 pb-3">
         <div
           ref={gridRef}
           role="grid"

@@ -163,6 +163,7 @@ routes.push(
     ["POST", "/api/kpis/summary"],
     ["POST", "/api/kpis/detailed-report"],
     ["GET", "/api/kpis/overview"],
+    ["GET", "/api/kpis/anomalies"],
     ["GET", "/api/kpis/daily-planning"],
     ["GET", "/api/corrections"],
     ["GET", "/api/corrections/stats"],

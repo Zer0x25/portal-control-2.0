@@ -10,6 +10,7 @@ import {
   MeterType,
 } from "../../../types";
 import Button from "../../../components/ui/Button";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import Input from "../../../components/ui/Input";
 import { CloseIcon, PlusCircleIcon, EditIcon, DeleteIcon } from "../../../components/ui/icons";
 import { idFactory } from "../../../utils/idFactory";
@@ -177,69 +178,41 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
               />
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="meter-category-select"
-                    className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
-                  >
-                    Categoría
-                  </label>
-                  <select
-                    id="meter-category-select"
-                    aria-label="Categoría"
-                    value={editingConfig.category}
-                    onChange={(e) => handleFieldChange("category", e.target.value as MeterCategory)}
-                    className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-                  >
-                    {Object.entries(METER_CATEGORIES).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="meter-unit-select"
-                    className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
-                  >
-                    Unidad
-                  </label>
-                  <select
-                    id="meter-unit-select"
-                    aria-label="Unidad"
-                    value={editingConfig.unit}
-                    onChange={(e) => handleFieldChange("unit", e.target.value)}
-                    className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-                  >
-                    {availableUnits.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FilterSelect
+                  id="meter-category-select"
+                  label="Categoría"
+                  aria-label="Categoría"
+                  value={editingConfig.category}
+                  onChange={(e) => handleFieldChange("category", e.target.value as MeterCategory)}
+                  options={Object.entries(METER_CATEGORIES).map(([key, label]) => ({
+                    value: key,
+                    label,
+                  }))}
+                />
+                <FilterSelect
+                  id="meter-unit-select"
+                  label="Unidad"
+                  aria-label="Unidad"
+                  value={editingConfig.unit}
+                  onChange={(e) => handleFieldChange("unit", e.target.value)}
+                  options={availableUnits.map((unit) => ({ value: unit, label: unit }))}
+                />
               </div>
 
               <div>
-                <label
-                  htmlFor="meter-type-select"
-                  className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
-                >
-                  Tipo de Medición
-                </label>
-                <select
+                <FilterSelect
                   id="meter-type-select"
+                  label="Tipo de Medición"
                   aria-label="Tipo de Medición"
                   value={editingConfig.type}
                   onChange={(e) => handleFieldChange("type", e.target.value as MeterType)}
-                  className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-                >
-                  <option value="CONSUMPTION">Consumo (Acumulativo)</option>
-                  <option value="LEVEL">Nivel (Estanque)</option>
-                  <option value="PERCENT">Porcentaje (0-100%)</option>
-                  <option value="INSTANT">Instantáneo (Temperatura, etc.)</option>
-                </select>
+                  options={[
+                    { value: "CONSUMPTION", label: "Consumo (Acumulativo)" },
+                    { value: "LEVEL", label: "Nivel (Estanque)" },
+                    { value: "PERCENT", label: "Porcentaje (0-100%)" },
+                    { value: "INSTANT", label: "Instantáneo (Temperatura, etc.)" },
+                  ]}
+                />
               </div>
 
               {(editingConfig.type === "LEVEL" || editingConfig.type === "PERCENT") && (

@@ -4,6 +4,7 @@ import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Badge from "../../../components/ui/Badge";
 import EmptyState from "../../../components/ui/EmptyState";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import { CalendarDaysIcon, SparklesIcon } from "../../../components/ui/icons";
 import type { Employee } from "../../../types";
 import {
@@ -88,70 +89,33 @@ export const MonthlyPlanWizardView: React.FC<MonthlyPlanWizardViewProps> = ({
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="monthly-plan-employee"
-              className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary ml-1"
-            >
-              Colaborador
-            </label>
-            <select
-              id="monthly-plan-employee"
-              value={selectedEmployeeId}
-              onChange={(e) => onSelectEmployee(e.target.value)}
-              disabled={isLoadingEmployees}
-              className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-xs font-bold text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
-            >
-              <option value="">Seleccionar colaborador...</option>
-              {sortedEmployees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="monthly-plan-employee"
+            label="Colaborador"
+            value={selectedEmployeeId}
+            onChange={(e) => onSelectEmployee(e.target.value)}
+            disabled={isLoadingEmployees}
+            options={[
+              { value: "", label: "Seleccionar colaborador..." },
+              ...sortedEmployees.map((emp) => ({ value: emp.id, label: emp.name })),
+            ]}
+          />
 
-          <div className="space-y-2">
-            <label
-              htmlFor="monthly-plan-month"
-              className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary ml-1"
-            >
-              Mes
-            </label>
-            <select
-              id="monthly-plan-month"
-              value={selectedMonth}
-              onChange={(e) => onSelectMonth(Number(e.target.value))}
-              className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-xs font-bold text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
-            >
-              {MONTH_OPTIONS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="monthly-plan-month"
+            label="Mes"
+            value={String(selectedMonth)}
+            onChange={(e) => onSelectMonth(Number(e.target.value))}
+            options={MONTH_OPTIONS.map((m) => ({ value: String(m.value), label: m.label }))}
+          />
 
-          <div className="space-y-2">
-            <label
-              htmlFor="monthly-plan-year"
-              className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary ml-1"
-            >
-              Año
-            </label>
-            <select
-              id="monthly-plan-year"
-              value={selectedYear}
-              onChange={(e) => onSelectYear(Number(e.target.value))}
-              className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-xs font-bold text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
-            >
-              {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="monthly-plan-year"
+            label="Año"
+            value={String(selectedYear)}
+            onChange={(e) => onSelectYear(Number(e.target.value))}
+            options={yearOptions.map((year) => ({ value: String(year), label: String(year) }))}
+          />
 
           <div className="space-y-2">
             <Input

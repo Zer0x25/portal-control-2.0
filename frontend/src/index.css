@@ -704,3 +704,33 @@ html[data-ui-perf="high"] [class*="shadow-["] {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/*
+  `color-scheme` alinea el tema con el popover nativo de <select> y los
+  controles del SO (scrollbar, calendarios de `input[type=date]`). Sin esto,
+  el popup de opciones se pinta con el fondo por defecto del sistema
+  (blanco) mientras el texto hereda `text-token-text-primary` claro, lo que
+  produce texto blanco sobre blanco en modo oscuro.
+
+  Se declara al final del archivo (no junto a los bloques de tokens) porque
+  los guardrails de contraste parsean el tema claro como "todo lo anterior al
+  primer bloque .dark".
+*/
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/*
+  Superficie opaca obligatoria para <option>: el popup nativo no resuelve
+  tokens semanticos y hereda `background-color: transparent`, lo que deja las
+  opciones ilegibles en ambos temas.
+*/
+select > option,
+select > optgroup {
+  background-color: var(--color-token-surface-card);
+  color: var(--color-token-text-primary);
+}

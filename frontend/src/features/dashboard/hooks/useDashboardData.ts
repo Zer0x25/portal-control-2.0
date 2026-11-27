@@ -14,6 +14,7 @@ export const useDashboardData = () => {
   };
 
   const unscheduledPresent = overviewData?.unscheduledPresent || [];
+  const employeeStatuses = overviewData?.employeeStatuses || [];
 
   return {
     isControlInternoEnabled,
@@ -23,5 +24,6 @@ export const useDashboardData = () => {
     isLoadingOverview,
     teamStatus,
     unscheduledPresent,
+    employeeStatuses,
   };
 };

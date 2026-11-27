@@ -40,6 +40,11 @@ export const kpisPlugin: FastifyPluginAsync<{
     () => options.service.overview(),
   );
   app.get(
+    "/api/kpis/anomalies",
+    { ...protectedRoute, preHandler: validateRequest("query", z.unknown()) },
+    () => options.service.anomalies(),
+  );
+  app.get(
     "/api/kpis/daily-planning",
     { ...protectedRoute, preHandler: validateRequest("query", z.unknown()) },
     () => options.service.daily(),

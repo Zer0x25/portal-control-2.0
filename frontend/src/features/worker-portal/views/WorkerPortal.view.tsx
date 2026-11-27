@@ -20,6 +20,7 @@ import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
 import Container from "../../../components/ui/Container";
 import Card from "../../../components/ui/Card";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import {
   DocumentArrowDownIcon,
   CalendarDaysIcon,
@@ -389,19 +390,15 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 </button>
               ))}
             </div>
-            <select
+            <FilterSelect
+              id="worker-month-select"
               data-testid="worker-month-select"
+              label="Mes del Calendario"
+              aria-label="Seleccionar mes del calendario"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              aria-label="Seleccionar mes del calendario"
-              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-xs font-medium text-token-text-secondary outline-none focus:border-token-accent-brand/50"
-            >
-              {monthOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={monthOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+            />
             <button
               data-testid="worker-export-pdf"
               onClick={() => handleExportPDF && handleExportPDF()}

@@ -4,6 +4,7 @@
  * Este componente ha sido refinado, factorizado y pulido bajo estándares industriales específicos.
  */
 import React, { useState, useRef, useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import {
   format,
   subMonths,
@@ -24,37 +25,43 @@ interface AuditMonthSelectorProps {
   onChange: (date: Date) => void;
 }
 
+const PANEL_WIDTH = 300;
+const VIEWPORT_MARGIN = 8;
+
 /**
  * 🗓️ Year Navigator Segment
- * Factored out for clean state management
+ * Al elegir un año el panel permanece abierto: así se encadena la selección
+ * del mes sin volver a abrir el desplegable.
  */
 const YearPicker: React.FC<{
   currentDate: Date;
   today: Date;
   onChange: (date: Date) => void;
-  onGoToToday: () => void;
-}> = ({ currentDate, today, onChange, onGoToToday }) => {
+}> = ({ currentDate, today, onChange }) => {
   const currentYear = currentDate.getFullYear();
-  const slidingYears = [currentYear - 1, currentYear, currentYear + 1];
+  const maxYear = today.getFullYear();
+  const slidingYears = [currentYear - 1, currentYear, currentYear + 1].map((year) =>
+    Math.min(year, maxYear),
+  );
+  const canGoOlder = currentYear - 1 > 1900;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-between items-center pr-1">
-        <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
-          Años
-        </p>
-        <button
-          onClick={onGoToToday}
-          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
-        >
-          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
-          Actual
-        </button>
-      </div>
+      <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
+        Años
+      </p>
       <div className="flex items-center justify-center gap-1.5 py-1">
-        {slidingYears.map((year) => {
+        <button
+          disabled={!canGoOlder}
+          onClick={() => onChange(setYear(currentDate, currentYear - 1))}
+          className="p-1 rounded-sm text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:text-token-accent-brand transition-colors"
+          title="Año anterior"
+        >
+          <ChevronLeftIcon className="w-3 h-3" />
+        </button>
+        {Array.from(new Set(slidingYears)).map((year) => {
           const isSelected = year === currentYear;
-          const isDisabled = year > today.getFullYear();
+          const isDisabled = year > maxYear;
 
           return (
             <button
@@ -76,6 +83,14 @@ const YearPicker: React.FC<{
             </button>
           );
         })}
+        <button
+          disabled={currentYear >= maxYear}
+          onClick={() => onChange(setYear(currentDate, currentYear + 1))}
+          className="p-1 rounded-sm text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:text-token-accent-brand transition-colors"
+          title="Año siguiente"
+        >
+          <ChevronRightIcon className="w-3 h-3" />
+        </button>
       </div>
     </div>
   );
@@ -88,7 +103,8 @@ const MonthPicker: React.FC<{
   currentDate: Date;
   today: Date;
   onChange: (monthIdx: number) => void;
-}> = ({ currentDate, today, onChange }) => {
+  onGoToToday: () => void;
+}> = ({ currentDate, today, onChange, onGoToToday }) => {
   const months = eachMonthOfInterval({
     start: startOfYear(currentDate),
     end: endOfYear(currentDate),
@@ -101,9 +117,18 @@ const MonthPicker: React.FC<{
 
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
-        Seleccionar Mes
-      </p>
+      <div className="flex justify-between items-center pr-1">
+        <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
+          Seleccionar Mes
+        </p>
+        <button
+          onClick={onGoToToday}
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
+        >
+          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
+          Actual
+        </button>
+      </div>
       <div className="grid grid-cols-4 gap-1.5">
         {months.map((m, idx) => {
           const isDisabled = isFuture(idx);
@@ -138,8 +163,10 @@ const MonthPicker: React.FC<{
 const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, onChange }) => {
   const today = useBusinessNow({ tickMs: null });
   const [isOpen, setIsOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ left: 0, top: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const closeAndRestoreFocus = () => {
     setIsOpen(false);
@@ -153,15 +180,41 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
     if (delta < 0 || nextDate <= today) onChange(nextDate);
   };
 
-  // Click Outside Logic
+  // Click Outside Logic (el panel vive en un portal, fuera del contenedor)
   useEffect(() => {
+    if (!isOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node))
-        setIsOpen(false);
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target) || panelRef.current?.contains(target)) return;
+      setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [isOpen]);
+
+  // El panel se ancla al disparador en coordenadas de viewport: asi escapa de
+  // contenedores con `overflow-hidden` o `transform` que lo recortaban.
+  useEffect(() => {
+    if (!isOpen) return;
+    const updatePosition = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      const maxLeft = window.innerWidth - PANEL_WIDTH - VIEWPORT_MARGIN;
+      setPanelPosition({
+        left: Math.min(Math.max(center - PANEL_WIDTH / 2, VIEWPORT_MARGIN), maxLeft),
+        top: rect.bottom + 6,
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen]);
 
   return (
     <div
@@ -174,72 +227,68 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
         }
       }}
     >
-      {/* 🧩 Header Control Bar */}
-      <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
-        <button
-          onClick={() => handleMonthShift(-1)}
-          className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
-          title="Anterior"
-        >
-          <ChevronLeftIcon className="w-3.5 h-3.5" />
-        </button>
+      {/* 🧩 Header Control Bar: el titulo va fuera de la capsula, como los labels de FilterSelect */}
+      <div className="flex flex-col min-w-[160px]">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 ml-1">
+          Periodo de Consulta
+        </p>
+        <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
+          <button
+            onClick={() => handleMonthShift(-1)}
+            className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+            title="Anterior"
+          >
+            <ChevronLeftIcon className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
-          aria-expanded={isOpen}
-          aria-controls={isOpen ? panelId : undefined}
-          className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-token-accent-brand">
-            Periodo de Consulta
-          </p>
-          <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap flex items-center gap-2">
-            {format(currentDate, "MMMM yyyy", { locale: es })}
+          <button
+            type="button"
+            ref={triggerRef}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-controls={isOpen ? panelId : undefined}
+            className="flex-1 flex items-center justify-between gap-2 px-2 text-center cursor-pointer rounded-sm hover:text-token-accent-brand transition-colors"
+          >
+            <span className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
+              {format(currentDate, "MMMM yyyy", { locale: es })}
+            </span>
             <ChevronLeftIcon
-              className={`w-3 h-3 text-token-text-tertiary transition-transform duration-150 ${isOpen ? "rotate-90" : "-rotate-90"}`}
+              className={`w-3.5 h-3.5 text-token-text-tertiary transition-transform duration-150 ${isOpen ? "rotate-90" : "-rotate-90"}`}
             />
-          </p>
-        </button>
+          </button>
 
-        <button
-          onClick={() => handleMonthShift(1)}
-          disabled={isCurrentMonth}
-          className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
-          title="Siguiente"
-        >
-          <ChevronRightIcon className="w-3.5 h-3.5" />
-        </button>
+          <button
+            onClick={() => handleMonthShift(1)}
+            disabled={isCurrentMonth}
+            className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
+            title="Siguiente"
+          >
+            <ChevronRightIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* Floating Panel */}
-      {isOpen && (
-        <div
-          id={panelId}
-          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
-        >
-          <div className="space-y-6">
-            <YearPicker
-              currentDate={currentDate}
-              today={today}
-              onChange={onChange}
-              onGoToToday={() => {
-                onChange(today);
-                closeAndRestoreFocus();
-              }}
-            />
-            <MonthPicker
-              currentDate={currentDate}
-              today={today}
-              onChange={(idx) => {
-                onChange(setMonth(currentDate, idx));
-                closeAndRestoreFocus();
-              }}
-            />
-          </div>
-        </div>
-      )}
+      {/* Floating Panel: portal al body para no ser recortado por tarjetas */}
+      {isOpen &&
+        createPortal(
+          <div
+            id={panelId}
+            ref={panelRef}
+            style={{ left: panelPosition.left, top: panelPosition.top }}
+            className={`fixed ${Z.modal} w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
+          >
+            <div className="space-y-6">
+              <YearPicker currentDate={currentDate} today={today} onChange={onChange} />
+              <MonthPicker
+                currentDate={currentDate}
+                today={today}
+                onChange={(idx) => onChange(setMonth(currentDate, idx))}
+                onGoToToday={() => onChange(today)}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

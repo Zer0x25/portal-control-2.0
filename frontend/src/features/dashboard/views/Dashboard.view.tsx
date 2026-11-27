@@ -11,12 +11,19 @@ import {
 } from "../components/DashboardDeferredModals";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import EmptyState from "../../../components/ui/EmptyState";
-import CinematicModal from "../../../components/ui/CinematicModal";
+import PresentEmployeesModal from "../components/PresentEmployeesModal";
+import AnomaliesModal from "../components/AnomaliesModal";
 import WelcomePanel from "../components/WelcomePanel";
 import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-import { DailyTimeRecord, DashboardWidget, ShiftReport } from "../../../types/index";
+import {
+  DailyTimeRecord,
+  DashboardWidget,
+  EmployeeWithClockingStatus,
+  ShiftReport,
+  TeamAnomalyRecord,
+} from "../../../types/index";
 
 interface DashboardModalsState {
   showReportDetailsModal: ShiftReport | null;
@@ -49,12 +56,21 @@ interface DashboardViewProps {
   isLoadingOverview: boolean;
   teamStatus: unknown;
   unscheduledPresent: unknown[];
+  employeeStatuses: EmployeeWithClockingStatus[];
+  isResolvingPresentRecord: boolean;
+  teamAnomalies: {
+    anomalies: TeamAnomalyRecord[];
+    count: number;
+    isLoading: boolean;
+    isError: boolean;
+    refetch: () => void;
+  };
   visibleWidgets: DashboardWidget[];
   widgetProps: Record<string, Record<string, unknown>>;
   quickActionModal: React.ReactNode;
   editTimestampModal: React.ReactNode;
-  handlePresentEmployeeDoubleClick: (r: DailyTimeRecord) => void;
-  handleAnomalyRecordDoubleClick: (r: DailyTimeRecord) => void;
+  handlePresentEmployeeDoubleClick: (employeeId: string, employeeName: string) => void;
+  handleAnomalyRecordDoubleClick: (r: TeamAnomalyRecord) => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -65,10 +81,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   shiftReports,
   isLoadingReports,
   isLoadingOverview,
+  employeeStatuses,
+  isResolvingPresentRecord,
+  teamAnomalies,
   visibleWidgets,
   widgetProps,
   quickActionModal,
   editTimestampModal,
+  handlePresentEmployeeDoubleClick,
+  handleAnomalyRecordDoubleClick,
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
@@ -146,23 +167,26 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       {quickActionModal}
       {editTimestampModal}
 
-      <CinematicModal
+      <AnomaliesModal
         isOpen={modals.isAnomaliesModalOpen}
         onClose={actions.closeAnomaliesModal}
-        title="Anomalías del Equipo"
-        maxWidth="max-w-6xl"
-      >
-        <div>Anomalías del equipo se mostrarán aquí</div>
-      </CinematicModal>
+        anomalies={teamAnomalies.anomalies}
+        count={teamAnomalies.count}
+        isLoading={teamAnomalies.isLoading}
+        isError={teamAnomalies.isError}
+        onRetry={() => {
+          void teamAnomalies.refetch();
+        }}
+        onAnomalyDoubleClick={handleAnomalyRecordDoubleClick}
+      />
 
-      <CinematicModal
+      <PresentEmployeesModal
         isOpen={modals.isPresentModalOpen}
         onClose={actions.closePresentModal}
-        title="Personal Presente"
-        maxWidth="max-w-6xl"
-      >
-        <div>Personal presente se mostrará aquí</div>
-      </CinematicModal>
+        employeeStatuses={employeeStatuses}
+        isResolvingRecord={isResolvingPresentRecord}
+        onEmployeeDoubleClick={handlePresentEmployeeDoubleClick}
+      />
 
       <AmbientReminderManager />
     </Container>

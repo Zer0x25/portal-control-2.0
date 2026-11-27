@@ -9,12 +9,13 @@ export interface KpiInput {
   cargo?: string;
   workdayType?: string;
 }
-export interface KpiDependencies<Summary, Detailed, Overview, Daily> {
+export interface KpiDependencies<Summary, Detailed, Overview, Daily, Anomalies> {
   service: {
     summary(input: KpiInput): Promise<Summary>;
     detailed(input: KpiInput): Promise<Detailed>;
     overview(): Promise<Overview>;
     daily(): Promise<Daily>;
+    anomalies(): Promise<Anomalies>;
   };
   dates: {
     exclusive(start: string, end: string): string;
