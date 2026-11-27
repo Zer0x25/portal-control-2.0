@@ -7,146 +7,114 @@ import {
   ArrowPathIcon,
 } from "../../../components/ui/icons/index";
 import { SeedingOptions } from "../../../schemas/forms/seed";
-import { getDBInstance } from "../../../utils/indexedDB";
-import { useSeedingProgressHealth } from "../hooks/useSeedingProgressHealth";
-import { logger } from "../../../utils/logger";
+import type { SeedingProgressController } from "../hooks/useSeedingProgressController";
 
-interface SeedingProgressModalProps {
+export interface SeedingProgressModalViewProps {
+  /** Visibilidad del modal. */
   isOpen: boolean;
+  /** Cierre del modal ( footer / X ). */
   onClose: () => void;
+  /** Lineas de progreso de fase 1 (stream NDJSON). */
   progressSteps: string[];
+  /** Bandera de finalizacion de fase 1. */
   isFinished: boolean;
-  error: string | null;
+  /** Opciones con las que corrio la fase 1 (resumen superior). */
   seedingOptions: SeedingOptions | null;
+  /** Job persistente de fase 2 (via controller; tipado completo en el servicio). */
   job?: import("../../../services/seedingService").SeedPhase2Job | null;
-  jobLogs?: string[];
+  /** Error del poll de estado (backend caido); banner de conexion en la vista. */
+  pollError?: string | null;
+  /** Inicia la fase 2 ( boton del estado intermedio ). */
   onStartPhase2?: () => void;
+  /** Pausa el job de fase 2. */
   onPausePhase2?: () => void;
+  /** Reanuda el job pausado. */
   onResumePhase2?: () => void;
+  /** Detiene el job de fase 2. */
   onStopPhase2?: () => void;
+  /** Estado y acciones extraidos del monolito (cronometro, derived, reload). */
+  controller: SeedingProgressController;
 }
 
-const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
+/**
+ * Vista pura del modal de progreso del seeding: render sin estado propio.
+ * Toda la logica vive en `useSeedingProgressController` y la orquestacion
+ * de fases en `useDeveloperPanelController`.
+ */
+const SeedingProgressModalView: React.FC<SeedingProgressModalViewProps> = ({
   isOpen,
   onClose,
-  progressSteps,
-  isFinished,
-  error,
+  progressSteps: _progressSteps,
+  isFinished: _isFinished,
   seedingOptions,
   job,
-  jobLogs = [],
+  pollError,
   onStartPhase2,
   onPausePhase2,
   onResumePhase2,
   onStopPhase2,
+  controller,
 }) => {
-  const [seconds, setSeconds] = React.useState(0);
-  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const logContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const logEndRef = React.useRef<HTMLDivElement | null>(null);
-
-  // Phase 2 is only "active" when the job is actually running or in a terminal state.
-  // A stopped/pending job means Phase 1 finished but Phase 2 hasn't started yet.
-  const isPhase2Active = !!job && job.status !== "stopped" && job.status !== "pending";
-
-  const effectiveIsFinished = isPhase2Active
-    ? job?.status === "completed" || job?.status === "failed"
-    : isFinished;
-  const effectiveError = isPhase2Active ? job?.errorSummary || null : error;
-
-  // Phase 1 done and Phase 2 waiting to be started
-  const isPhase1DonePhase2Pending = isFinished && !isPhase2Active;
-  const healthData = useSeedingProgressHealth(isOpen, effectiveIsFinished);
-
-  React.useEffect(() => {
-    if (isOpen) {
-      setSeconds(0);
-    }
-  }, [isOpen]);
-
-  React.useEffect(() => {
-    if (isOpen && !effectiveIsFinished) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isOpen, effectiveIsFinished]);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const hasLogs = isPhase2Active ? jobLogs.length > 0 : progressSteps.length > 0;
-    if (!hasLogs) return;
-
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
-    }
-  }, [isOpen, isPhase2Active, jobLogs.length, progressSteps.length]);
+  const {
+    logEndRef,
+    isPhase2Active,
+    effectiveIsFinished,
+    effectiveError,
+    isPhase1DonePhase2Pending,
+    healthData,
+    displayedLogs,
+    elapsedLabel,
+    currentPercent,
+    handleReload,
+  } = controller;
 
   if (!isOpen) return null;
 
-  const formatTime = (totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleReload = async () => {
-    try {
-      const db = await getDBInstance();
-      await Promise.all(Array.from(db.objectStoreNames).map((storeName) => db.clear(storeName)));
-    } catch (e) {
-      logger.warn("Error clearing IndexedDB:", e);
-    }
-    localStorage.removeItem("lastSyncTime");
-    sessionStorage.clear();
-    window.location.href = "/";
-  };
-
   const renderOptionsSummary = () => {
-    const opts = job?.config || seedingOptions;
+    // Fase 2: el job solo persiste los cuatro numeros de su contrato
+    // (days/leaveRatio/correctionRequestRatio/batchSize). El resumen de
+    // fase 1 usa las siete opciones completas del formulario.
+    if (isPhase2Active) {
+      const config = job?.config;
+      if (!config) return null;
+      return (
+        <div className="grid grid-cols-2 text-xs text-token-text-secondary gap-x-4 gap-y-1 mb-3">
+          <span>
+            Días: <strong>{config.days}</strong>
+          </span>
+          <span className="col-span-2 text-token-accent-brand">
+            FASE 2: Generación de Marcaciones
+          </span>
+          <div className="col-span-2 flex items-center text-token-accent-brand font-mono mt-1">
+            <span className="mr-1">Tiempo Transcurrido:</span>
+            <strong className="text-sm">{elapsedLabel}</strong>
+          </div>
+        </div>
+      );
+    }
+    const opts = seedingOptions;
     if (!opts) return null;
     return (
       <div className="grid grid-cols-2 text-xs text-token-text-secondary gap-x-4 gap-y-1 mb-3">
         <span>
-          Empleados: <strong>{(opts.employees as number) || "-"}</strong>
+          Empleados: <strong>{opts.employees ?? "-"}</strong>
         </span>
         <span>
-          Días: <strong>{opts.days as number}</strong>
+          Días: <strong>{opts.days}</strong>
         </span>
-        {isPhase2Active ? (
-          <>
-            <span className="col-span-2 text-token-accent-brand">
-              FASE 2: Generación de Marcaciones
-            </span>
-          </>
-        ) : (
-          <>
-            <span>
-              Patrones: <strong>{opts.basePatternsCount as number}</strong>
-            </span>
-            <span>
-              Reportes: <strong>{opts.shiftReportsPerDay as number}</strong>
-            </span>
-          </>
-        )}
+        <span>
+          Patrones: <strong>{opts.basePatternsCount}</strong>
+        </span>
+        <span>
+          Reportes: <strong>{opts.shiftReportsPerDay}</strong>
+        </span>
         <div className="col-span-2 flex items-center text-token-accent-brand font-mono mt-1">
           <span className="mr-1">Tiempo Transcurrido:</span>
-          <strong className="text-sm">{formatTime(seconds)}</strong>
+          <strong className="text-sm">{elapsedLabel}</strong>
         </div>
       </div>
     );
   };
-
-  const currentPercent = job?.progress
-    ? Math.round((job.progress.currentDay / job.progress.totalDays) * 100)
-    : 0;
 
   return (
     <CinematicModal
@@ -159,6 +127,14 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
       bodyClassName="p-0 overflow-y-auto custom-scrollbar max-h-[85vh]"
     >
       <div className="p-6">
+        {pollError && !effectiveError && (
+          <div
+            role="alert"
+            className="mb-3 p-2 rounded-md bg-token-status-warning/10 border border-token-status-warning/30 text-token-status-warning text-[10px] font-bold"
+          >
+            Sin conexión con el servidor: {pollError}. Reintentando...
+          </div>
+        )}
         {renderOptionsSummary()}
 
         {isPhase2Active && job?.progress && (
@@ -169,7 +145,14 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
               </span>
               <span>{currentPercent}%</span>
             </div>
-            <div className="w-full bg-token-surface-technical h-2 rounded-full overflow-hidden">
+            <div
+              role="progressbar"
+              aria-label="Progreso de la fase 2"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={currentPercent}
+              className="w-full bg-token-surface-technical h-2 rounded-full overflow-hidden"
+            >
               <div
                 className="bg-token-accent-brand h-full"
                 style={{ width: `${currentPercent}%` }}
@@ -220,10 +203,11 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
         </div>
 
         <div
-          ref={logContainerRef}
+          aria-live="polite"
+          aria-label="Registro de progreso del seeding"
           className="bg-token-surface-technical p-3 rounded-md max-h-48 overflow-y-auto font-mono text-[11px] space-y-1 border border-token-border-subtle"
         >
-          {(isPhase2Active && jobLogs.length > 0 ? jobLogs : progressSteps).map((step, index) => (
+          {displayedLogs.map((step, index) => (
             <div key={index} className="flex items-start">
               <span className="text-token-text-tertiary mr-2 shrink-0">
                 {String(index + 1).padStart(3, "0")}:
@@ -315,4 +299,4 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
   );
 };
 
-export default SeedingProgressModal;
+export default SeedingProgressModalView;

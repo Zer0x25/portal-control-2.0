@@ -53,14 +53,28 @@ export const useDeveloperPanelController = () => {
 
   const [phase2Logs, setPhase2Logs] = useState<string[]>([]);
 
+  /**
+   * Ultimo error del poll de fase 2 (backend caido / respuesta invalida).
+   * Visible en el modal de progreso para no dejar la UI "running" eterna.
+   */
+  const [pollError, setPollError] = useState<string | null>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
         setIsDevPanelOpen(false);
       }
     };
+    /** Cierre del menu por teclado (accesibilidad). */
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDevPanelOpen(false);
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const [isTabVisible, setIsTabVisible] = useState(true);
@@ -79,6 +93,7 @@ export const useDeveloperPanelController = () => {
       if (!isTabVisible && !jobId) return;
       try {
         const status = await getSeedPhase2Status(jobId || phase2Job?.id);
+        setPollError(null);
         if (status.job) {
           setPhase2Job(status.job);
           const logsResp = await getSeedPhase2Logs(status.job.id);
@@ -94,8 +109,12 @@ export const useDeveloperPanelController = () => {
             );
           }
         }
-      } catch {
-        // ignore
+      } catch (e) {
+        // Sin este estado el modal quedaria "running" para siempre sin
+        // feedback cuando el backend cae o responde mal.
+        const message = e instanceof Error ? e.message : "Estado del seeding no disponible";
+        setPollError(message);
+        logger.warn("Poll de fase 2 fallo:", e);
       }
     },
     [isTabVisible, phase2Job],
@@ -317,6 +336,8 @@ export const useDeveloperPanelController = () => {
     setPhase2Job,
     phase2Logs,
     setPhase2Logs,
+    pollError,
+    setPollError,
     isTabVisible,
     setIsTabVisible,
     handleSeedData,

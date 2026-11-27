@@ -4,10 +4,21 @@ import { request as apiRequest } from "./apiClient";
 export type SeedPhase2JobStatus =
   "pending" | "running" | "paused" | "completed" | "failed" | "stopped";
 
+/**
+ * Config persistida del job de fase 2 (tabla `SeedingJob`, columna `config`).
+ * Escriben el backend (`seedingJobService`) y `SeedPhase2StartSchema`.
+ */
+export interface SeedPhase2Config {
+  days: number;
+  leaveRatio: number;
+  correctionRequestRatio: number;
+  batchSize?: number;
+}
+
 export interface SeedPhase2Job {
   id: string;
   status: SeedPhase2JobStatus;
-  config: Record<string, unknown>;
+  config: SeedPhase2Config;
   progress: {
     currentDay: number;
     totalDays: number;
@@ -147,6 +158,3 @@ export const getSeedPhase2Logs = async (jobId: string): Promise<SeedPhase2LogsRe
     cache: "no-store",
   });
 };
-
-// Backward compatibility for existing calls
-export const seedDatabase = seedPhase1;
