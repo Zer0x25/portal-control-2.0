@@ -535,40 +535,38 @@ describe("Spec023 operations on Fastify", () => {
     expect(cleaner).toHaveBeenCalledOnce();
     expect(systemOperationService.getSnapshot()?.actorUsername).toBe("owner");
   });
-  it.each(["seed", "seed/phase1"])(
-    "%s shares defaults, seed ALS and stopped-job persistence",
-    async (path) => {
-      gzip = true;
-      vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(
-        async (options, progress, heartbeat) => {
-          expect(requestContext.getStore()).toMatchObject({
-            username: "SYSTEM_SEEDER",
-            skipTrigger: true,
-          });
-          await new Promise((resolve) => setTimeout(resolve, 5));
-          expect(requestContext.getStore()?.username).toBe("SYSTEM_SEEDER");
-          expect(options).toMatchObject({
-            employees: 0,
-            days: 0,
-            basePatternsCount: 3,
-            quickNotesCount: 5,
-          });
-          heartbeat();
-          progress("owned progress");
-        },
-      );
-      const response = await http("POST", `/api/maintenance/${path}`, {}, token, true);
-      expect(response.status).toBe(200);
-      expect(response.headers["content-encoding"]).toBeUndefined();
-      expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
-      const job = await prismaDirect.seedingJob.findFirst();
-      expect(job).toMatchObject({
-        createdBy: "operations-admin",
-        status: "stopped",
-        config: { days: 1, leaveRatio: 5, correctionRequestRatio: 2, batchSize: 250 },
-      });
-    },
-  );
+  it("seed/phase1 shares defaults, seed ALS and stopped-job persistence", async () => {
+    gzip = true;
+    const path = "seed/phase1";
+    vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(
+      async (options, progress, heartbeat) => {
+        expect(requestContext.getStore()).toMatchObject({
+          username: "SYSTEM_SEEDER",
+          skipTrigger: true,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        expect(requestContext.getStore()?.username).toBe("SYSTEM_SEEDER");
+        expect(options).toMatchObject({
+          employees: 0,
+          days: 0,
+          basePatternsCount: 3,
+          quickNotesCount: 5,
+        });
+        heartbeat();
+        progress("owned progress");
+      },
+    );
+    const response = await http("POST", `/api/maintenance/${path}`, {}, token, true);
+    expect(response.status).toBe(200);
+    expect(response.headers["content-encoding"]).toBeUndefined();
+    expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
+    const job = await prismaDirect.seedingJob.findFirst();
+    expect(job).toMatchObject({
+      createdBy: "operations-admin",
+      status: "stopped",
+      config: { days: 1, leaveRatio: 5, correctionRequestRatio: 2, batchSize: 250 },
+    });
+  });
   it("seed owns maintenance and blocks reset, backup and phase2 until completion", async () => {
     vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(async () => {
       expect(systemOperationService.getSnapshot()?.type).toBe("seed");
