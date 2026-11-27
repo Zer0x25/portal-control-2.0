@@ -123,10 +123,14 @@ export const TeamAnomaliesSchema = z
   })
   .openapi("TeamAnomalies");
 
+/**
+ * Opciones del seeder fase 1 (POST /api/maintenance/seed/phase1). Solo los
+ * campos que `SeederEngine.runSeedPhase1` consume realmente; el resto del
+ * contrato historico (clearExisting, adminPassword, seedEmployees, ...) era
+ * ignorado por el engine y se elimino para no documentar ficcion.
+ */
 export const SeedOptionsSchema = z
   .object({
-    clearExisting: z.boolean().optional(),
-    adminPassword: z.string().optional(),
     employees: z.number().int().min(0).optional(),
     days: z.number().int().min(0).optional(),
     basePatternsCount: z.number().int().min(1).optional(),
@@ -134,10 +138,6 @@ export const SeedOptionsSchema = z
     correctionRequestRatio: z.number().min(0).max(100).optional(),
     shiftReportsPerDay: z.number().min(0).max(6).optional(),
     quickNotesCount: z.number().int().min(0).optional(),
-    seedEmployees: z.boolean().optional(),
-    seedShifts: z.boolean().optional(),
-    seedRecords: z.boolean().optional(),
-    monthsToSeed: z.number().int().min(1).max(12).optional(),
   })
   .openapi("SeedOptions");
 
@@ -163,17 +163,36 @@ export const SeedPhase2JobSchema = z
   })
   .openapi("SeedPhase2Job");
 
-export const SeedStatusSchema = z
+/**
+ * Respuesta de GET /api/maintenance/seed/phase2/status: el job persistido
+ * (tabla SeedingJob) o `null` si no hay ninguno. Reemplaza al SeedStatus
+ * historico que documentaba un shape que el endpoint nunca devolvio.
+ */
+export const SeedPhase2StatusSchema = z
   .object({
-    status: z.enum(["idle", "running", "paused", "completed", "error"]),
-    progress: z.number(),
-    processed: z.number(),
-    total: z.number(),
-    currentPhase: z.string().optional(),
-    startTime: z.string().optional(),
-    error: z.string().optional(),
+    success: z.boolean(),
+    job: z
+      .object({
+        id: z.string(),
+        status: z.enum(["pending", "running", "paused", "completed", "failed", "stopped"]),
+        config: z.object({
+          days: z.number(),
+          leaveRatio: z.number(),
+          correctionRequestRatio: z.number(),
+          batchSize: z.number(),
+        }),
+        progress: z.object({
+          currentDay: z.number(),
+          totalDays: z.number(),
+          processedRecords: z.number(),
+          sealedRecords: z.number(),
+          errors: z.number(),
+        }),
+        errorSummary: z.string().nullable().optional(),
+      })
+      .nullable(),
   })
-  .openapi("SeedStatus");
+  .openapi("SeedPhase2Status");
 
 export const SystemStatsSchema = z
   .object({

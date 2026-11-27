@@ -2822,15 +2822,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "SeedOptions": {
         "properties": {
-          "adminPassword": {
-            "type": "string",
-          },
           "basePatternsCount": {
             "minimum": 1,
             "type": "integer",
-          },
-          "clearExisting": {
-            "type": "boolean",
           },
           "correctionRequestRatio": {
             "maximum": 100,
@@ -2850,23 +2844,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "minimum": 0,
             "type": "number",
           },
-          "monthsToSeed": {
-            "maximum": 12,
-            "minimum": 1,
-            "type": "integer",
-          },
           "quickNotesCount": {
             "minimum": 0,
             "type": "integer",
-          },
-          "seedEmployees": {
-            "type": "boolean",
-          },
-          "seedRecords": {
-            "type": "boolean",
-          },
-          "seedShifts": {
-            "type": "boolean",
           },
           "shiftReportsPerDay": {
             "maximum": 6,
@@ -2913,42 +2893,95 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "type": "object",
       },
-      "SeedStatus": {
+      "SeedPhase2Status": {
         "properties": {
-          "currentPhase": {
-            "type": "string",
-          },
-          "error": {
-            "type": "string",
-          },
-          "processed": {
-            "type": "number",
-          },
-          "progress": {
-            "type": "number",
-          },
-          "startTime": {
-            "type": "string",
-          },
-          "status": {
-            "enum": [
-              "idle",
-              "running",
-              "paused",
-              "completed",
-              "error",
+          "job": {
+            "nullable": true,
+            "properties": {
+              "config": {
+                "properties": {
+                  "batchSize": {
+                    "type": "number",
+                  },
+                  "correctionRequestRatio": {
+                    "type": "number",
+                  },
+                  "days": {
+                    "type": "number",
+                  },
+                  "leaveRatio": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "days",
+                  "leaveRatio",
+                  "correctionRequestRatio",
+                  "batchSize",
+                ],
+                "type": "object",
+              },
+              "errorSummary": {
+                "nullable": true,
+                "type": "string",
+              },
+              "id": {
+                "type": "string",
+              },
+              "progress": {
+                "properties": {
+                  "currentDay": {
+                    "type": "number",
+                  },
+                  "errors": {
+                    "type": "number",
+                  },
+                  "processedRecords": {
+                    "type": "number",
+                  },
+                  "sealedRecords": {
+                    "type": "number",
+                  },
+                  "totalDays": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "currentDay",
+                  "totalDays",
+                  "processedRecords",
+                  "sealedRecords",
+                  "errors",
+                ],
+                "type": "object",
+              },
+              "status": {
+                "enum": [
+                  "pending",
+                  "running",
+                  "paused",
+                  "completed",
+                  "failed",
+                  "stopped",
+                ],
+                "type": "string",
+              },
+            },
+            "required": [
+              "id",
+              "status",
+              "config",
+              "progress",
             ],
-            "type": "string",
+            "type": "object",
           },
-          "total": {
-            "type": "number",
+          "success": {
+            "type": "boolean",
           },
         },
         "required": [
-          "status",
-          "progress",
-          "processed",
-          "total",
+          "success",
+          "job",
         ],
         "type": "object",
       },
@@ -6656,7 +6689,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeedStatus",
+                  "$ref": "#/components/schemas/SeedPhase2Status",
                 },
               },
             },

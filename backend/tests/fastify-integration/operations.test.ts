@@ -35,7 +35,6 @@ const routes = [
   ["POST", "/api/admin/restore"],
   ["POST", "/api/admin/restart"],
   ["DELETE", "/api/maintenance/clear-database"],
-  ["POST", "/api/maintenance/seed"],
   ["POST", "/api/maintenance/seed/phase1"],
   ["POST", "/api/maintenance/seed/phase2/start"],
   ["POST", "/api/maintenance/seed/phase2/pause"],
@@ -608,7 +607,7 @@ describe("Spec023 operations on Fastify", () => {
     const engine = vi
       .spyOn(seedingEngine, "runSeedPhase1")
       .mockRejectedValueOnce(new Error("owned seed failure"));
-    const failed = await http("POST", "/api/maintenance/seed", {}, token, true);
+    const failed = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
     expect(failed.status).toBe(200);
     expect(lines(failed.bytes).at(-1)).toEqual({
       error: "Error crítico en fase 1; no se confirmó la finalización.",
@@ -617,9 +616,11 @@ describe("Spec023 operations on Fastify", () => {
     vi.spyOn(seedingJobService, "createStoppedJob").mockRejectedValueOnce(
       new Error("owned job failure"),
     );
-    const success = await http("POST", "/api/maintenance/seed", {}, token, true);
+    const success = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
     expect(lines(success.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
-    expect((await http("POST", "/api/maintenance/seed", { employees: -1 })).status).toBe(400);
+    expect((await http("POST", "/api/maintenance/seed/phase1", { employees: -1 })).status).toBe(
+      400,
+    );
   });
   it("persists phase2 lifecycle and logs while suppressing background worker", async () => {
     expect((await http("GET", "/api/maintenance/seed/phase2/status")).body.job).toBeNull();

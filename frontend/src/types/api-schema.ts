@@ -2151,7 +2151,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": components["schemas"]["SeedStatus"];
+            "application/json": components["schemas"]["SeedPhase2Status"];
           };
         };
       };
@@ -5866,8 +5866,6 @@ export interface components {
       lastAuditTimestamp: string;
     };
     SeedOptions: {
-      clearExisting?: boolean;
-      adminPassword?: string;
       employees?: number;
       days?: number;
       basePatternsCount?: number;
@@ -5875,10 +5873,6 @@ export interface components {
       correctionRequestRatio?: number;
       shiftReportsPerDay?: number;
       quickNotesCount?: number;
-      seedEmployees?: boolean;
-      seedShifts?: boolean;
-      seedRecords?: boolean;
-      monthsToSeed?: number;
     };
     SeedPhase2Job: {
       jobId: string;
@@ -5889,15 +5883,27 @@ export interface components {
       correctionRequestRatio?: number;
       batchSize?: number;
     };
-    SeedStatus: {
-      /** @enum {string} */
-      status: "idle" | "running" | "paused" | "completed" | "error";
-      progress: number;
-      processed: number;
-      total: number;
-      currentPhase?: string;
-      startTime?: string;
-      error?: string;
+    SeedPhase2Status: {
+      success: boolean;
+      job: {
+        id: string;
+        /** @enum {string} */
+        status: "pending" | "running" | "paused" | "completed" | "failed" | "stopped";
+        config: {
+          days: number;
+          leaveRatio: number;
+          correctionRequestRatio: number;
+          batchSize: number;
+        };
+        progress: {
+          currentDay: number;
+          totalDays: number;
+          processedRecords: number;
+          sealedRecords: number;
+          errors: number;
+        };
+        errorSummary?: string | null;
+      } | null;
     };
     ServerTime: {
       iso: string;
