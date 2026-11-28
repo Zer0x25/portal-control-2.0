@@ -1,5 +1,32 @@
 # Changelog
 
+## [8.45.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.44.0...v8.45.0) (2026-11-28)
+
+
+### Features
+
+* **frontend:** actualizar los creditos del about modal a Zer0x DevOps ([a79d0f4](https://github.com/Zer0x25/portal-control-2.0/commit/a79d0f4620ad72ce1b945b6ff86e1fe801ac0636))
+
+
+### Bug Fixes
+
+* **backend:** actualizar pruebas y script legado a la ruta unica de phase1 ([ab36aa3](https://github.com/Zer0x25/portal-control-2.0/commit/ab36aa38d4799a7e62742881c519d6cf25021bc1))
+* **backend:** recortar el contrato de seed phase 2 y eliminar la ruta duplicada ([243b3e6](https://github.com/Zer0x25/portal-control-2.0/commit/243b3e61e15dfbc4b9c970c48896605508cd58c8))
+* **frontend:** consumir el stream NDJSON del reset maestro ([9b3063a](https://github.com/Zer0x25/portal-control-2.0/commit/9b3063a79e92aa57443409ab28089750779bc080))
+* **frontend:** corregir el visor de fase 2 del panel de seeding ([fbb847f](https://github.com/Zer0x25/portal-control-2.0/commit/fbb847f311aa2940ea002abb65615872d3c76a14))
+* **frontend:** detener el poll de fase 2 cuando no hay job activo ([924e1f7](https://github.com/Zer0x25/portal-control-2.0/commit/924e1f72261f7e6a91b05e683a4c907146d11f1c))
+* **frontend:** resolver los fallos de reanudacion, storm de poll y data obsoleta del seeder ([acf9bae](https://github.com/Zer0x25/portal-control-2.0/commit/acf9bae158886e979d28128dba90a5ba4c7ac260))
+
+
+### Performance Improvements
+
+* **ci:** elimina la pasada duplicada de ESLint ([700d62b](https://github.com/Zer0x25/portal-control-2.0/commit/700d62bc78b2bc9d8de4000698e7a3eebb7249c0))
+* **ci:** elimina la pasada duplicada de ESLint ([f843eef](https://github.com/Zer0x25/portal-control-2.0/commit/f843eef507a9f03f2eec96bbb0fa38b248daf6d6))
+* **preflight:** agiliza la validación local por cambios ([30bf5a5](https://github.com/Zer0x25/portal-control-2.0/commit/30bf5a5fcd3a13275e119637a94084e4545b3127))
+* **preflight:** agiliza la validación local por cambios ([996c0a2](https://github.com/Zer0x25/portal-control-2.0/commit/996c0a2a2cd6a32836a95826f8248a16c04c7952))
+* **test:** ejecuta las pruebas JSDOM con hilos ([6d0fc67](https://github.com/Zer0x25/portal-control-2.0/commit/6d0fc676d7b19f8b3cd1409e1be3d05f61520c43))
+* **test:** ejecuta las pruebas JSDOM con hilos ([6fd11d4](https://github.com/Zer0x25/portal-control-2.0/commit/6fd11d4c051766549b90497ff6202495fdce1217))
+
 ## [8.44.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.43.1...v8.44.0) (2026-11-27)
 
 
