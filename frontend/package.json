@@ -56,8 +56,8 @@
     "test:run:ci": "node scripts/run-frontend-tests.cjs",
     "tokens:build": "node scripts/build-tokens.cjs --write",
     "tokens:check": "node scripts/build-tokens.cjs --check",
-    "validate:ci": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:run:ci && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
-    "validate:ci:coverage": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:coverage && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
+    "validate:ci": "npm run format:check && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:run:ci && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
+    "validate:ci:coverage": "npm run format:check && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:coverage && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
     "check:font-subsets": "node scripts/check-font-subsets.cjs",
     "check:bootstrap-csp": "node scripts/check-bootstrap-csp.cjs"
   },
