@@ -72,21 +72,29 @@ Todos los endpoints exigen `authenticate` + `admin` (`req.user?.role === "Admini
 | `POST /api/admin/reset-password`               | `ResetPasswordBodySchema` | Restablece contraseña de un usuario (min 6 caracteres).                 |
 | `POST /api/admin/restore`                      | `RestoreBackupSchema`     | Restaura un respaldo `.sql` / `.sql.gz` desde el directorio de backups. |
 
-#### D. Maintenance (`/api/maintenance/*`, `backend/src/modules/maintenance/http/routes.ts:14-69`)
+#### D. Maintenance (`/api/maintenance/*`)
 
-Todos exigen `authenticate` + `admin` (`Administrador`), desactivan compresión (`compress: false`), están exentos de `globalRateLimit` y no tienen rate limit dedicado:
+Las rutas de [mantenimiento](../../backend/src/modules/maintenance/http/routes.ts)
+requieren autenticación y el rol `Super_Administrador`. Usan
+`compress: false` y están exentas del límite global. El límite dedicado
+de administración se aplica a `/api/admin`.
 
-| Método y Ruta                              | Validación              | Función AS-IS                                                                  |
-| :----------------------------------------- | :---------------------- | :----------------------------------------------------------------------------- |
-| `DELETE /api/maintenance/clear-database`   | `z.unknown()`           | Limpia BD con `withDirectTransaction` preservando actor y `admin` (streaming). |
-| `POST /api/maintenance/seed`               | `SeedOptionsSchema`     | Alias seeding Fase 1 (streaming progreso NDJSON).                              |
-| `POST /api/maintenance/seed/phase1`        | `SeedOptionsSchema`     | Ejecuta seeding estructural Fase 1 (streaming progreso NDJSON).                |
-| `POST /api/maintenance/seed/phase2/start`  | `SeedPhase2StartSchema` | Inicia job asíncrono `MARKINGS_PHASE2` en `seedingJobService`.                 |
-| `POST /api/maintenance/seed/phase2/pause`  | `SeedPhase2JobSchema`   | Pausa job Fase 2.                                                              |
-| `POST /api/maintenance/seed/phase2/resume` | `SeedPhase2JobSchema`   | Reanuda job Fase 2.                                                            |
-| `POST /api/maintenance/seed/phase2/stop`   | `SeedPhase2JobSchema`   | Detiene job Fase 2.                                                            |
-| `GET /api/maintenance/seed/phase2/status`  | `z.unknown()`           | Consulta estado de job Fase 2 (`jobId`).                                       |
-| `GET /api/maintenance/seed/phase2/logs`    | `z.unknown()`           | Consulta logs paginados (`jobId`, `limit`) de job Fase 2.                      |
+| Método y Ruta                              | Validación                  | Función AS-IS                                                                  |
+| :----------------------------------------- | :-------------------------- | :----------------------------------------------------------------------------- |
+| `DELETE /api/maintenance/clear-database`   | `z.unknown()`               | Limpia BD con `withDirectTransaction` preservando actor y `admin` (streaming). |
+| `POST /api/maintenance/seed/phase1`        | `SeedOptionsSchema`         | Ejecuta seeding estructural Fase 1 (streaming progreso NDJSON).                |
+| `POST /api/maintenance/seed/phase2/start`  | `SeedPhase2StartSchema`     | Inicia job asíncrono `MARKINGS_PHASE2` en `seedingJobService`.                 |
+| `POST /api/maintenance/seed/phase2/pause`  | `SeedPhase2JobSchema`       | Pausa job Fase 2.                                                              |
+| `POST /api/maintenance/seed/phase2/resume` | `SeedPhase2JobSchema`       | Reanuda job Fase 2.                                                            |
+| `POST /api/maintenance/seed/phase2/stop`   | `SeedPhase2JobSchema`       | Detiene job Fase 2.                                                            |
+| `GET /api/maintenance/seed/phase2/status`  | `z.unknown()`               | Consulta el job de fase 2 por `jobId`. Si se omite, devuelve el más reciente.  |
+| `GET /api/maintenance/seed/phase2/logs`    | `SeedPhase2LogsQuerySchema` | Consulta logs de fase 2 por `jobId` con un `limit` entre 1 y 1000.             |
+
+El PR #181 verificó en navegador que, tras completar fase 1, cerrar el
+panel y volver a iniciar sesión, el usuario puede retomar fase 2 y ver
+los datos actualizados en el dashboard. También reportó ocho consultas
+de estado en unos veinte segundos después de corregir el sondeo.
+[Evidencia del PR #181](https://github.com/Zer0x25/portal-control-2.0/pull/181)
 
 ### 1.3 Jobs y Servicios de Fondo
 

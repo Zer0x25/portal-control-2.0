@@ -30,4 +30,4 @@ description: Invariants and execution rules for Spec-Driven Development (SDD) an
 - **Checks de gobernanza**:
   - `npm run spec:check`: Verifica que todas las specs contengan `spec.md`, `plan.md`, `tasks.md` y checkboxes válidos.
   - `npm run docs:check`: Verifica enlaces markdown relativos y consistencia de índices de ADRs.
-- **Preflight completo**: Correr siempre `npm run preflight` antes de generar commits para asegurar 0 warnings de lint, tipos estrictos y cumplimiento de gobernanza.
+- **Preflight**. Ejecutar `npm run preflight` para iterar y `npm run preflight -- --pr` antes de abrir un PR. [Alcance de cada modo](../skills/ci-preflight/SKILL.md).

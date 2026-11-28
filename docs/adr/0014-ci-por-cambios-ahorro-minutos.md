@@ -119,6 +119,31 @@ Negativas / costos aceptados:
 - Un cambio solo en `scripts/` dispara ambos verifys (filtro grueso
   deliberado: `lint-budget.cjs` afecta a los dos paquetes).
 
+## Validación local por cambios
+
+`npm run preflight -- --pr` usa el diff desde el ancestro común con
+`origin/main` y los cambios locales para seleccionar paquetes. Siempre
+comprueba gobernanza y formato Markdown. `npm run preflight -- --full`
+ejecuta las suites locales de ambos paquetes y Storybook. Esa pasada
+también se usa si Git no puede calcular el diff. Los detalles están en la
+[guía de preflight](../../.agents/skills/ci-preflight/SKILL.md).
+
+Cuando están seleccionados ambos paquetes y hay al menos cuatro CPU lógicas
+disponibles, el preflight local ejecuta sus validaciones en paralelo después de
+la gobernanza y de `check:sdk`, que regenera archivos usados por ambos paquetes.
+Dentro de cada paquete los pasos siguen en serie. `--serial` selecciona las
+mismas comprobaciones y ejecuta un paquete por vez.
+
+En el piloto local del 2026-11-27, con las dependencias instaladas, la
+pasada por cambios tardó 8 s para documentación, 82 s para backend y
+302 s para un cambio de configuración de Storybook que activó las
+pruebas de frontend y de historias. La versión anterior tardó 328 s
+con el árbol limpio.
+
+En una comparación posterior del mismo día, con cuatro CPU lógicas y
+las mismas 2154 pruebas, `preflight --full` pasó de 355,25 s con el
+preflight en serie a 317,72 s en paralelo (37,53 s menos, 10,6 %).
+
 ## Referencias
 
 - `.github/workflows/ci.yml` — jobs `changes`, `gates`,
