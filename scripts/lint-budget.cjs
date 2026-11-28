@@ -80,10 +80,19 @@ function runEslint(target) {
 
   for (const file of report) {
     for (const message of file.messages) {
-      if (message.severity === 2) errors += 1;
+      const isError = message.severity === 2;
+      if (isError) errors += 1;
       else warnings += 1;
       const rule = message.ruleId || "unknown";
       byRule[rule] = (byRule[rule] || 0) + 1;
+
+      const position = message.line
+        ? `:${message.line}:${message.column ?? 1}`
+        : "";
+      const ruleLabel = message.ruleId ? ` (${message.ruleId})` : "";
+      console.log(
+        `${file.filePath}${position} ${isError ? "error" : "warning"} ${message.message}${ruleLabel}`,
+      );
     }
   }
 
