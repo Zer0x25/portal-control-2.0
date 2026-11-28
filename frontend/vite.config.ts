@@ -320,6 +320,7 @@ export default defineConfig(async ({ mode }) => {
           test: {
             name: "jsdom",
             environment: "jsdom",
+            pool: "threads",
             setupFiles: "./src/tests/setup.ts",
             include: ["src/**/*.{test,spec}.{ts,tsx}"],
             exclude: ["e2e/**", "node_modules/**", "dist/**", "src/tests/browser/**"],
