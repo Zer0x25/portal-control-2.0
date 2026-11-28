@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.45.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.45.0...v8.45.1) (2026-11-28)
+
+
+### Bug Fixes
+
+* **visual:** refresh stale e2e baselines and settle transient loading strips ([a5b1b90](https://github.com/Zer0x25/portal-control-2.0/commit/a5b1b9030549cc9781ec21ff9a0b789c788a4bbd))
+* **visual:** refresh stale e2e baselines and settle transient loading strips ([27fd438](https://github.com/Zer0x25/portal-control-2.0/commit/27fd438fcc91b2c930499d210aa1331d1c218d85))
+
 ## [8.45.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.44.0...v8.45.0) (2026-11-28)
 
 
