@@ -1,89 +1,188 @@
 #!/usr/bin/env node
-const { execSync } = require('child_process');
-const path = require('path');
+const { execFileSync, spawn } = require("node:child_process");
+const { existsSync } = require("node:fs");
+const { availableParallelism } = require("node:os");
+const path = require("node:path");
 
-const rootDir = path.resolve(__dirname, '../../../../');
-const isPrMode = process.argv.includes('--pr') || process.argv.includes('--full');
+const rootDir = path.resolve(__dirname, "../../../../");
+const backendDir = path.join(rootDir, "backend");
+const full = process.argv.includes("--full");
+const pr = process.argv.includes("--pr") && !full;
+const completeScope = { backend: true, frontend: true, stories: true };
 
-function run(cmd, desc, cwd = rootDir) {
-  console.log(`\n⏳ [${desc}] Running: ${cmd}`);
-  execSync(cmd, { cwd, stdio: 'inherit' });
+function git(...args) {
+  return execFileSync("git", args, {
+    cwd: rootDir,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  })
+    .split("\0")
+    .filter(Boolean);
 }
 
-function checkSddDiscipline() {
-  try {
-    const gitStatus = execSync('git status --porcelain', { cwd: rootDir, encoding: 'utf8' });
-    const lines = gitStatus.split('\n').filter(Boolean);
-    const codeChanged = lines.some((l) => /^[MADRCU?]{1,2}\s+(backend\/src|frontend\/src)/.test(l));
-    const specsChanged = lines.some((l) => /^[MADRCU?]{1,2}\s+(specs\/|docs\/adr\/)/.test(l));
+function isDocumentation(file) {
+  if (file.startsWith("docs/") || file.startsWith("specs/")) return true;
+  if (!file.endsWith(".md")) return false;
+  const standaloneDocs = [
+    ".github/pull_request_template.md",
+    "backend/README.md",
+    "frontend/README.md",
+  ];
+  return (
+    !file.includes("/") ||
+    file.startsWith(".agents/") ||
+    file.startsWith("backend/docs/") ||
+    standaloneDocs.includes(file)
+  );
+}
 
-    if (codeChanged && !specsChanged) {
-      console.log(
-        '\n💡 [Gobernanza SDD] Detectados cambios en código productivo (src/) sin cambios en specs/ ni docs/adr/.',
+function scopeFor(files) {
+  const scope = { backend: false, frontend: false, stories: false };
+  for (const file of files) {
+    if (isDocumentation(file)) continue;
+    if (file.startsWith("backend/")) {
+      scope.backend = true;
+      if (file === "backend/docs/swagger.json") scope.frontend = true;
+    } else if (file.startsWith("frontend/")) {
+      scope.frontend = true;
+      if (!file.startsWith("frontend/e2e/")) scope.stories = true;
+    } else {
+      return completeScope;
+    }
+  }
+  return scope;
+}
+
+function run(command, args, label, cwd = rootDir) {
+  console.log("\n[" + label + "] " + [command, ...args].join(" "));
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: "inherit",
+      shell: command === "npm" && process.platform === "win32",
+    });
+    child.once("error", (error) => reject(new Error(`${label}: ${error.message}`)));
+    child.once("close", (code, signal) => {
+      if (code === 0) resolve();
+      else reject(new Error(`${label}: ${signal || `código ${code}`}`));
+    });
+  });
+}
+
+function npm(script, cwd = rootDir) {
+  return run("npm", ["run", script], path.basename(cwd) + " · " + script, cwd);
+}
+
+function checkMarkdown(files) {
+  const governanceMarkdown = ["docs/adr/*.md", "specs/**/*.md", ".agents/**/*.md", "AGENTS.md"];
+  const prettier = require.resolve("prettier/bin/prettier.cjs", { paths: [backendDir] });
+  const changedMarkdown = files
+    .filter(
+      (file) =>
+        file.endsWith(".md") && isDocumentation(file) && existsSync(path.join(rootDir, file)),
+    )
+    .map((file) => "./" + file);
+  return run(
+    process.execPath,
+    [prettier, "--check", ...governanceMarkdown, ...changedMarkdown],
+    "Formato Markdown",
+  );
+}
+
+function checkSddDiscipline(files) {
+  const codeChanged = files.some((file) => /^(backend|frontend)\/src\//.test(file));
+  const specsChanged = files.some((file) => /^(specs|docs\/adr)\//.test(file));
+  if (codeChanged && !specsChanged) {
+    console.log(
+      "\n[Gobernanza SDD] Para una funcionalidad nueva o un refactor estructural, enlaza la spec o créala con npm run spec:new <slug>.",
+    );
+  }
+}
+
+async function checkPackage(workspace, scope) {
+  const cwd = path.join(rootDir, workspace);
+  await run("npm", ["run", "lint:budget", "--", "--only", workspace], `${workspace} · lint:budget`);
+  await npm("check", cwd);
+  if (!pr && !full) return;
+
+  await npm("format:check", cwd);
+  if (workspace === "backend") {
+    await npm("test:unit:ci", cwd);
+    await npm("test:schemas-refactor", cwd);
+  } else {
+    await npm("catalog:manifest:check", cwd);
+    await npm("tokens:check", cwd);
+    await npm("audit:design-system", cwd);
+    await npm("test:run:ci", cwd);
+    if (scope.stories) await npm("test:storybook", cwd);
+  }
+}
+
+async function main() {
+  let files = [];
+  let baseAvailable = true;
+  try {
+    files = git(
+      "status",
+      "--porcelain=v1",
+      "-z",
+      "--no-renames",
+      "--untracked-files=all",
+      "--",
+    ).map((entry) => entry.slice(3));
+    if (pr || full) {
+      const branchFiles = git(
+        "diff",
+        "--name-only",
+        "--no-renames",
+        "-z",
+        "origin/main...HEAD",
+        "--",
       );
-      console.log(
-        '   Si es una nueva funcionalidad o refactor estructural, crea su spec con: npm run spec:new <slug>',
-      );
+      files = [...new Set([...files, ...branchFiles])];
     }
   } catch {
-    // ignore git error if not in git repo
-  }
-}
-
-try {
-  run('npm run secrets:scan', '1/6 Secrets Scan');
-  run('npm run spec:check', '2/6 Specification Check');
-  run('npm run docs:check', '3/6 Documentation Consistency');
-  run(
-    'backend/node_modules/.bin/prettier --check "docs/adr/*.md" "specs/**/*.md" ".agents/**/*.md" "AGENTS.md"',
-    '4/6 Markdown Prettier Formatting',
-  );
-  run('npm run lint:budget', '5/6 ESLint Budget Ratchet (0/0)');
-  console.log('\n⏳ [6/6 TypeScript Check] Running typecheck on backend & frontend...');
-  execSync('npm run check', { cwd: path.join(rootDir, 'backend'), stdio: 'inherit' });
-  execSync('npm run check', { cwd: path.join(rootDir, 'frontend'), stdio: 'inherit' });
-
-  if (isPrMode) {
-    console.log('\n🛡️  [Pre-PR Gate] Ejecutando suite completa de pruebas antes de PR / Push...');
-    run('npm run format:check', 'Pre-PR Frontend Format Check', path.join(rootDir, 'frontend'));
-    run('npm run catalog:manifest:check', 'Pre-PR Design System Manifest Check', path.join(rootDir, 'frontend'));
-    run('npm run tokens:check', 'Pre-PR Design Tokens Check', path.join(rootDir, 'frontend'));
-    run('npm run audit:design-system', 'Pre-PR Design System Audit', path.join(rootDir, 'frontend'));
-    run('npm run test:run:ci', 'Pre-PR Frontend Full Tests', path.join(rootDir, 'frontend'));
-    // Spec 122: story tests (smoke render + axe a11y de las historias
-    // certificadas, browser mode) cuando el cambio toca `frontend/src`.
-    // Se mira el arbol de trabajo Y el diff contra origin/main: en pre-PR
-    // los cambios ya estan confirmados y `git status` sale limpio.
-    const feSrcChanged = (function () {
-      try {
-        const st = execSync('git status --porcelain -- frontend/src', { cwd: rootDir, encoding: 'utf8' });
-        if (st.split('\n').some(Boolean)) return true;
-        const diff = execSync('git diff --name-only origin/main...HEAD -- frontend/src', {
-          cwd: rootDir,
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'ignore'],
-        });
-        return diff.split('\n').some(Boolean);
-      } catch {
-        // Sin origin/main disponible (p. ej. clon fresco sin fetch) no se bloquea.
-        return false;
-      }
-    })();
-    if (feSrcChanged) {
-      run('npm run test:storybook', 'Pre-PR Storybook Story Tests', path.join(rootDir, 'frontend'));
-    }
-    run('npm run check:sdk', 'Pre-PR Backend SDK Sync Check', path.join(rootDir, 'backend'));
-    run('npm run test:schemas-refactor', 'Pre-PR Backend Schema Tests', path.join(rootDir, 'backend'));
+    baseAvailable = false;
+    if (pr)
+      console.warn(
+        "[preflight] Git no pudo calcular el diff con origin/main. Se ejecutará la validación completa.",
+      );
   }
 
-  checkSddDiscipline();
-
+  const scope = pr && baseAvailable ? scopeFor(files) : completeScope;
+  const packages = ["backend", "frontend"].filter((name) => scope[name]);
+  const parallel =
+    packages.length > 1 && !process.argv.includes("--serial") && availableParallelism() >= 4;
+  const mode = full ? "--full" : pr ? "--pr" : "iteración";
+  const storySummary = pr || full ? " · Storybook: " + (scope.stories ? "sí" : "no") : "";
   console.log(
-    `\n✅ All preflight checks passed successfully! Ready to ${isPrMode ? 'open PR / merge' : 'commit'}.\n`,
+    "[preflight] " + mode + " · paquetes: " + (packages.join(", ") || "ninguno") + storySummary,
   );
-} catch (error) {
-  console.error(
-    `\n❌ Preflight validation failed. Fix the issues before ${isPrMode ? 'opening PR' : 'committing'}.`,
-  );
-  process.exit(1);
+
+  await npm("secrets:scan");
+  await npm("spec:check");
+  await npm("docs:check");
+  await checkMarkdown(files);
+
+  // El check regenera Swagger y el SDK que leen ambos paquetes.
+  if ((pr || full) && scope.backend) await npm("check:sdk", backendDir);
+
+  if (parallel) {
+    console.log("\n[preflight] Backend y frontend en paralelo.");
+    const results = await Promise.allSettled(
+      packages.map((workspace) => checkPackage(workspace, scope)),
+    );
+    const failures = results.filter((result) => result.status === "rejected");
+    if (failures.length) throw new Error(failures.map(({ reason }) => reason.message).join("\n"));
+  } else {
+    for (const workspace of packages) await checkPackage(workspace, scope);
+  }
+
+  checkSddDiscipline(files);
+  console.log("\n[preflight] Validación local aprobada.");
 }
+
+main().catch((error) => {
+  console.error("\n[preflight] Validación local fallida. " + error.message);
+  process.exitCode = 1;
+});

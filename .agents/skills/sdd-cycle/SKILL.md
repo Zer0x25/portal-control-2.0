@@ -103,12 +103,11 @@ If the spec introduced or altered a structural decision (e.g. Fastify plugins, a
 
 ### Step 7: Preflight Validation & Commit
 
-Run the preflight suite before pushing:
+Run the preflight from the repository root.
 
 ```bash
-npm run spec:check    # Verifies all specs have valid format & checkboxes
-npm run docs:check    # Verifies markdown links & ADR index
-npm run preflight     # Full suite: secrets, specs, docs, lint budget, typecheck
+npm run preflight         # Local iteration: repository gates, lint budget and types
+npm run preflight -- --pr # Pre-PR: repository gates and tests for affected packages
 ```
 
 Commit following Conventional Commits (`feat(modulo): ...`, `refactor(modulo): ...`).

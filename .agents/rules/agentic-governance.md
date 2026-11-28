@@ -25,5 +25,5 @@ description: Invariants for agentic workflow, rule hygiene, AGENTS.md budget, an
 
 ## 4. Disciplina Pre-PR: Pruebas Exhaustivas Locales
 
-- **Prohibido abrir PRs solo con validación ligera**: Antes de crear un Pull Request (`gh pr create`) o solicitar fusión hacia `main`, el agente o colaborador DEBE ejecutar la validación exhaustiva (`node .agents/skills/ci-preflight/scripts/preflight.cjs --pr` o `npm run test:run:ci` en los paquetes modificados).
+- Antes de crear un PR o solicitar fusión hacia `main`, ejecutar `npm run preflight -- --pr` desde la raíz. Registrar en el PR los escenarios y resultados, y actualizar el documento de `docs/flows/` cuando cambie un flujo documentado.
 - **GitHub Actions como Último Salvavidas**: CI en remoto valida la integración y despliegue final, pero toda regresión unitaria debe detectarse y resolverse localmente antes de llegar al repositorio remoto.

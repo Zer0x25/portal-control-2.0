@@ -1,107 +1,30 @@
 ---
 name: ci-preflight
-description: >-
-  Step-by-step preflight checklist and validation runbook before committing or pushing changes. Use this skill to verify lint ratchet (0/0), governance gates (secrets, docs, specs), TypeScript type checks, and Conventional Commit message compliance.
+description: >
+  Ejecuta el preflight del repositorio para validar gobernanza, formato, lint,
+  tipos y pruebas locales antes de abrir un PR.
 ---
 
-# CI Preflight & Governance Quality Runbook
+# Preflight de CI
 
-This skill provides the mandatory verification sequence before committing changes or opening a PR to ensure that GitHub Actions CI, `release-please`, and local pre-push hooks pass on the first attempt.
+Ejecuta los comandos desde la raíz del repositorio.
 
-## Quality Invariants & Ratchets (Must Pass)
+| Comando                       | Validación                                                               |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `npm run preflight`           | Gobernanza, formato Markdown, lint y tipos en los dos paquetes.          |
+| `npm run preflight -- --pr`   | Gobernanza, formato Markdown y suites locales de los paquetes afectados. |
+| `npm run preflight -- --full` | Pasada completa de backend, frontend y Storybook.                        |
 
-1. **ESLint Ratchet**: The warning count is pinned at `0/0` in `lint-budget.json`. Any new warning fails CI.
-2. **Conventional Commits**: Commit messages must strictly follow `type(optional-scope): message`. No emojis in the subject line (they break `release-please`).
-3. **Zero `any` & Strict Types**: No `any` types permitted in production TypeScript (`src/`).
+Ejecuta el modo `--pr` antes de abrir un PR, subir cambios a su rama o solicitar su fusión a `main`. El script combina el diff de la rama desde su ancestro común con `origin/main` y los cambios locales, incluidos archivos nuevos. La salida indica los paquetes seleccionados. Un cambio compartido selecciona ambos paquetes. Un cambio en `backend/docs/swagger.json` activa los checks de frontend y backend. Si Git no puede calcular el diff, el script ejecuta la pasada completa.
 
----
+La gobernanza y, cuando corresponde, la verificación del SDK se comprueban primero. `check:sdk` regenera Swagger y los tipos de frontend. Si están seleccionados ambos paquetes y hay al menos cuatro CPU lógicas disponibles, el resto de backend y frontend se valida en paralelo. Las pruebas de frontend y Storybook se mantienen en serie dentro de su paquete. Para ejecutar la misma selección en serie, añade `--serial`, por ejemplo `npm run preflight -- --full --serial`.
 
-## Validation Levels: Iteration vs. Pre-PR Gate
+- **Repositorio**. Escaneo de secretos, integridad de specs y ADR, formato de Markdown de gobernanza y de la documentación afectada.
+- **Backend**. Lint con presupuesto cero, tipos, formato, sincronía del SDK, `test:unit:ci` y `test:schemas-refactor`.
+- **Frontend**. Lint con presupuesto cero, tipos, formato, manifiesto del catálogo, tokens, auditoría del sistema de diseño y `test:run:ci`. Los cambios que pueden afectar el catálogo o sus pruebas activan además `test:storybook`.
 
-### Mode 1: Local Iteration (Frequent Micro-commits, ~10s)
+Corrige los errores en el código. El presupuesto de lint se mantiene en cero salvo decisión explícita. El hook `commit-msg` comprueba Conventional Commits, por ejemplo `fix(auth): cerrar sesión al expirar el token`.
 
-For daily development tasks, refactoring, and local commits:
+Registra en el PR el escenario probado, su resultado y cualquier pendiente. GitHub Actions ejecuta build y cobertura en los paquetes afectados, además de la integración HTTP de Fastify con PostgreSQL efímero si cambia backend.
 
-```bash
-node .agents/skills/ci-preflight/scripts/preflight.cjs
-```
-
-### Mode 2: Mandatory Pre-PR Gate (Before Opening or Pushing a PR, ~1 min)
-
-**Mandatory before `gh pr create` or pushing changes to a PR branch**:
-Executes typechecks, linters, formatting (`format:check`), design-system gates (`catalog:manifest:check`, `tokens:check`, `audit:design-system`), and the **full unit test suites (`test:run:ci`)** of modified workspaces (if `catalog:manifest:check` fails, run `cd frontend && npm run catalog:manifest`):
-
-```bash
-node .agents/skills/ci-preflight/scripts/preflight.cjs --pr
-```
-
-> **Principle**: _GitHub Actions is our safety net and certification gate, never the initial regression discoverer._
-
-Helper script: [preflight.cjs](./scripts/preflight.cjs)
-
----
-
-## Detailed Execution Checklist (Step-by-Step)
-
-### Step 1: Governance & Security Gates (Root)
-
-Run the lightweight repository integrity checks:
-
-```bash
-npm run secrets:scan   # Detects accidental secrets/tokens
-npm run spec:check      # Validates BDD/TDD specification format
-npm run docs:check      # Checks ADR links and markdown integrity
-```
-
-### Step 2: Lint Budget Ratchet Check
-
-Verify that ESLint warnings do not exceed the ratchet:
-
-```bash
-npm run lint:budget
-```
-
-If errors or new warnings appear:
-
-- Fix the warnings in the respective code files.
-- Never increase the budget in `lint-budget.json` unless explicitly approved.
-
-### Step 3: TypeScript Type Checking
-
-Verify types across both workspaces:
-
-```bash
-# Backend
-cd backend && npm run check
-
-# Frontend
-cd ../frontend && npm run check
-```
-
-### Step 4: Conventional Commit Verification
-
-Before committing, verify that your commit message adheres to Conventional Commits:
-
-- **Valid examples**:
-  - `feat(api): add export telemetry endpoint`
-  - `fix(auth): handle session expiration on direct transaction`
-  - `refactor(scheduling): optimize batch shift calculation`
-  - `chore(deps): update prisma client to 7.0`
-- **Invalid examples (DO NOT USE)**:
-  - `🔒 fix: mfa issue` _(Emojis in subject are forbidden)_
-  - `Update backend code` _(Missing conventional commit type)_
-
----
-
-## Package-Specific Deep Validation (Before Merging to Main)
-
-If your changes affect backend or frontend core logic:
-
-- **Backend CI Suite**:
-  ```bash
-  cd backend && npm run validate:ci
-  ```
-- **Frontend CI Suite**:
-  ```bash
-  cd frontend && npm run validate:ci
-  ```
+[Script de preflight](./scripts/preflight.cjs)

@@ -7,10 +7,10 @@ description: Agentic Storybook integration invariants — CLI tools, MCP server,
 
 ## 1. Herramientas y cuándo usarlas
 
-- **Descubrir antes de crear UI**: `npx storybook tools docs list` /
-  `docs show` (o MCP `docs-list`/`docs-show` con `npm run storybook`
-  activo, server registrado en `.vscode/mcp.json`,
-  `http://127.0.0.1:6006/mcp`). Reusar primitivas certificadas
+- **Descubrir antes de crear UI**. Desde `frontend/`, usar la CLI local
+  `npx storybook tools docs list` / `docs show`. Para un cliente MCP
+  compatible, usar `docs-list` / `docs-show` con Storybook activo
+  y la configuración de `.mcp.json`. Reusar primitivas certificadas
   (`frontend/design-system-certified.json`); no inventar props: si no está
   en el manifiesto, no existe.
 - **Tras cambiar UI**: `npx storybook tools stories changed` detecta las

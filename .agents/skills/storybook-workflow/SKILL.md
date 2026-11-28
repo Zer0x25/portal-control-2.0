@@ -15,9 +15,9 @@ All commands run from `frontend/` unless noted.
 
 ## 1. Before editing UI: discover, don't reinvent
 
-Before creating or changing any component, check what the design system
-already provides. Never hand-roll a duplicate of a certified primitive, and
-never invent props.
+Before creating or changing a component, use the local CLI to find certified
+primitives and inspect their props and stories. These commands also work with
+the dev server stopped.
 
 ```bash
 # List every documented component (id + name)
@@ -27,8 +27,9 @@ npx storybook tools docs list --json
 npx storybook tools docs show --input '{"id":"certified-components-ui-button"}'
 ```
 
-If the dev server is running (`npm run storybook`, port 6006), the same
-tools are available via the MCP server (`storybook` in `.vscode/mcp.json`):
+With the dev server running (`npm run storybook`), compatible MCP clients
+can use the [project configuration](../../../.mcp.json) for
+`http://127.0.0.1:6006/mcp`. The server exposes
 `docs-list`, `docs-show`, `docs-show-story`,
 `get-storybook-story-instructions`. The MCP server also offers
 `stories-preview`, `stories-changed`, `stories-find-by-component` and
@@ -119,7 +120,8 @@ see the changed components.
 
 ## 5. Preflight
 
-The pre-PR gate runs `npm run test:storybook` when `frontend/src` changed
-(`node .agents/skills/ci-preflight/scripts/preflight.cjs --pr`). Storybook
-build integrity is part of `validate:ci` (`storybook:build`), and the
-production bundle is guarded by `check:storybook-runtime`.
+From the repository root, `npm run preflight -- --pr` runs
+`test:storybook` when the diff can affect the catalog or its tests.
+`npm run preflight -- --full` always includes the story suite. The CI
+build checks Storybook with `storybook:build` and guards the production
+bundle with `check:storybook-runtime`.

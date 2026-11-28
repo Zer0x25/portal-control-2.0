@@ -1,17 +1,7 @@
-## Spec
+## Cambio
 
-<!-- Enlace obligatorio para cambios funcionales: specs/NNNN-slug/spec.md -->
+<!-- Resume el comportamiento cambiado. Enlaza la spec para funcionalidades o refactors mayores, y el ADR para decisiones permanentes. Si cambió un flujo operativo, actualiza y enlaza su entrada en docs/flows/. -->
 
-- Spec: ...
-- [ ] Sigue `specs/constitution.md` (I–V)
+## Evidencia
 
-## Verificación
-
-- [ ] `npm run validate:ci` verde en `backend/` y `frontend/`
-- [ ] `npm run spec:check` verde (si añade `specs/NNNN-*`)
-- [ ] Contrato intacto: `npm run check:sdk` sin diff no committed
-      (`backend/docs/swagger.json` + `frontend/src/types/api-schema.ts`)
-
-## Decisión permanente
-
-- [ ] No aplica, o ADR creado/actualizado en `docs/adr/`
+<!-- Indica el escenario, el comando o enlace a la corrida y su resultado. Registra los pendientes de verificación si los hay. -->

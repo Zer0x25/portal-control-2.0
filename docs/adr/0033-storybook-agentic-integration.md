@@ -51,10 +51,9 @@ interactivo.
      `.storybook/` relativo al cwd).
    - **`@storybook/addon-mcp`** registrado en `frontend/.storybook/main.ts` y
      expuesto en `http://127.0.0.1:6006/mcp` (el script `storybook` ya fija
-     host `127.0.0.1` y puerto `6006`). `.vscode/mcp.json` lo registra para
-     VS Code Copilot. El MCP **nunca** sustituye a la CLI en automatización:
-     requiere el dev server corriendo; la CLI sirvepara `--json` en pipelines
-     locales.
+     host `127.0.0.1` y puerto `6006`). La configuración del proyecto está
+     en `.mcp.json`, para clientes MCP compatibles. La CLI admite
+     `--json` para automatización local con el servidor detenido.
    - **`@storybook/addon-vitest`** como **tercer proyecto Vitest**
      (`storybook`) junto a `jsdom` y `browser` en `frontend/vite.config.ts`:
      browser mode con el provider Playwright existente, include solo
@@ -141,11 +140,11 @@ Negativas / costos aceptados:
 - `frontend/vite.config.ts` — proyecto Vitest `storybook` (activado con
   `STORYBOOK_TESTS=1`).
 - `frontend/package.json` — script `test:storybook`, versiones 10.6.9.
-- `.vscode/mcp.json` — registro del servidor MCP para VS Code.
+- `.mcp.json` — configuración del servidor para clientes MCP compatibles.
 - `.agents/skills/storybook-workflow/SKILL.md` — runbook del ciclo agéntico.
 - `.agents/rules/storybook-agentic.md` — regla modular on-demand.
 - `.agents/skills/ci-preflight/scripts/preflight.cjs` — story tests en el
-  gate pre-PR cuando `frontend/src` cambió.
+  preflight por cambios que afectan al catálogo o en modo completo.
 - `specs/122-storybook-agentic-integration/` — spec, plan y tareas.
 - `docs/tech-debt-register.md` TD-005 — ratchet de contraste.
 - ADR-0027 (frontera tooling/runtime que esta decisión respeta).
