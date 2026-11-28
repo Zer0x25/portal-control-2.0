@@ -340,6 +340,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </div>
           {isClockingStatusUncertain && (
             <div
+              data-testid="worker-clocking-status-uncertain"
               className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-token-border-subtle bg-token-surface-stripe p-4 text-sm text-token-text-secondary"
               role={isClockingStatusError ? "alert" : "status"}
             >
@@ -588,6 +589,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
 
       {isPendingCorrectionsUncertain && (
         <div
+          data-testid="worker-pending-corrections-uncertain"
           className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-token-border-subtle bg-token-surface-stripe p-4 text-sm text-token-text-secondary"
           role={isPendingCorrectionsError ? "alert" : "status"}
         >
@@ -619,7 +621,11 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </p>
         </div>
         {isLoadingCorrectionRequests && correctionRequests.length === 0 && (
-          <p className="p-6 text-sm text-token-text-secondary" role="status">
+          <p
+            data-testid="worker-correction-history-loading"
+            className="p-6 text-sm text-token-text-secondary"
+            role="status"
+          >
             Cargando historial de solicitudes...
           </p>
         )}

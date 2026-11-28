@@ -121,6 +121,13 @@ async function runVisualAssertion(page: Page, target: VisualTarget, theme: "ligh
       timeout: 15000,
     })
     .toBe(0);
+  // Los indicadores de carga condicionales también desplazan el layout si la
+  // captura pilla una query en vuelo (p.ej. la franja "Consultando tu último
+  // marcaje..." del worker-portal suma ~48px y rompe el snapshot). El estado
+  // estable de cada vista no incluye estas franjas: esperar su desaparición.
+  for (const transient of target.settleSelectors ?? []) {
+    await expect(page.locator(transient)).toHaveCount(0, { timeout: 15000 });
+  }
   await applyTheme(page, theme);
 
   // Restricciones de layout para que la geometría de la captura no dependa
