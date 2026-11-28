@@ -35,6 +35,12 @@ export interface VisualTarget {
   /** Títulos de tarjetas cuyo cuerpo depende del backend: se enmascaran. */
   volatileCards?: string[];
   /**
+   * Selectores de indicadores de carga transitorios (franjas "Consultando..."
+   * o "Cargando..."): la captura espera a que desaparezcan para no fijar un
+   * layout intermedio que depende de la latencia de las queries.
+   */
+  settleSelectors?: string[];
+  /**
    * CSS inyectado en la página antes de capturar. Sirve para **fijar la
    * geometría** de una región cuyo alto depende del volumen de datos, de
    * modo que la región enmascarada tenga siempre el mismo alto y el snapshot
@@ -76,6 +82,15 @@ export const VISUAL_TARGETS: VisualTarget[] = [
       '[data-testid="worker-identity"]',
       '[data-testid="worker-identity-code"]',
       '[data-testid="app-header-user"]',
+    ],
+    // Las tres franjas condicionales (marcaje incierto, correcciones
+    // pendientes en verificación, historial cargando) suman alto variable y
+    // desplazan todo el contenido bajo la tarjeta de identidad: sin esperar
+    // su desaparición, el snapshot depende de la latencia de las queries.
+    settleSelectors: [
+      '[data-testid="worker-clocking-status-uncertain"]',
+      '[data-testid="worker-pending-corrections-uncertain"]',
+      '[data-testid="worker-correction-history-loading"]',
     ],
   },
   {
